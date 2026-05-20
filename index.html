@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新澳门六合彩风险管理系统 - 2026马年版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --red-ball: #ef4444;
+            --blue-ball: #3b82f6;
+            --green-ball: #22c55e;
+            --gold: #facc15;
+        }
+        .ball-red { background-color: var(--red-ball); }
+        .ball-blue { background-color: var(--blue-ball); }
+        .ball-green { background-color: var(--green-ball); }
+        
+        .grid-table {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1px;
+            background-color: #e5e7eb;
+            border: 1px solid #e5e7eb;
+        }
+        .number-row {
+            background-color: white;
+            display: flex;
+            align-items: center;
+            padding: 4px 8px;
+            height: 44px;
+        }
+        .bet-input {
+            border: none;
+            outline: none;
+            width: 100%;
+            text-align: right;
+            font-weight: 600;
+            color: #1f2937;
+            background: transparent;
+        }
+        .bet-input:focus { background-color: #fef9c3; }
+        .bet-input:disabled { color: #9ca3af; cursor: not-allowed; }
+        
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .syncing { animation: pulse-slow 1s infinite; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .zodiac-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        }
+        .group-btn.active {
+            background-color: #8b5cf6;
+            color: white;
+            border-color: #7c3aed;
+        }
+        
+        .not-num-btn {
+            transition: all 0.15s;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        .not-num-btn.active {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 5px solid #000 !important;
+            z-index: 10;
+        }
+        .not-num-btn.active::after {
+            content: "X";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(0, 0, 0, 0.25);
+            font-size: 3.5rem;
+            font-family: Arial, sans-serif;
+            font-weight: 900;
+            pointer-events: none;
+            line-height: 1;
+            text-shadow: 0 0 5px rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 font-sans leading-tight">
+
+<div class="max-w-[1600px] mx-auto p-2 lg:p-4 flex flex-col lg:flex-row gap-4">
+    <div class="flex-1 space-y-4">
+        <!-- 开奖状态栏 -->
+        <div class="bg-gray-900 text-white p-4 rounded-xl shadow-lg border border-gray-700">
+            <div class="flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <div id="syncDot" class="w-2.5 h-2.5 rounded-full bg-gray-500"></div>
+                        <span id="syncText" class="text-xs text-gray-400">载入中...</span>
+                        <span id="countdownTimer" class="text-xs text-yellow-400 font-mono ml-2 border-l border-gray-700 pl-2">倒计时 --:--:--</span>
+                    </div>
+                    <div class="text-lg font-bold">
+                        投注期：<span id="bettingPeriodDisplay" class="text-blue-400">---</span> 期
+                        <span id="lockStatus" class="ml-2 text-xs font-normal px-2 py-0.5 rounded"></span>
+                    </div>
+                </div>
+                
+                <div class="text-center px-4 border-l border-r border-gray-700">
+                    <div class="text-[10px] text-gray-500 uppercase font-bold tracking-wider">
+                        最新开奖期：<span id="latestIssue" class="text-white">---</span> <span id="latestDate" class="ml-1 text-gray-400"></span>
+                    </div>
+                    <div class="flex gap-2 mt-1" id="lotteryBalls"></div>
+                </div>
+
+                <div class="flex gap-2">
+                    <a href="https://www.1234kj.tv/post/?lotteryId=2033" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-xs rounded font-medium transition flex items-center">官网开奖</a>
+                    <button onclick="showPasteModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-xs rounded font-medium transition">手动录入</button>
+                    <button onclick="showAiModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-xs rounded font-medium transition">AI识别录入</button>
+                    <button onclick="triggerAutoFetch()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-xs rounded font-medium transition">刷新同步</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex border-b border-gray-200">
+            <button onclick="switchTab('direct')" id="tabDirect" class="px-6 py-2 font-bold text-sm border-b-2 border-blue-600 text-blue-600">单号总单</button>
+            <button onclick="switchTab('multi')" id="tabMulti" class="px-6 py-2 font-bold text-sm text-gray-500 hover:text-blue-600 transition">多肖玩法</button>
+            <button onclick="switchTab('group')" id="tabGroup" class="px-6 py-2 font-bold text-sm text-gray-500 hover:text-blue-600 transition">生肖组别</button>
+            <button onclick="switchTab('not')" id="tabNot" class="px-6 py-2 font-bold text-sm text-gray-500 hover:text-blue-600 transition">N不中</button>
+        </div>
+
+        <!-- 1. 单号录入区 -->
+        <div id="directInputSection" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+                <div class="p-2 border-r border-gray-100 text-center">
+                    <div class="text-xs text-gray-500">当前投注总额</div>
+                    <div id="grandTotal" class="text-xl font-black text-red-600">0</div>
+                </div>
+                <div class="p-2 border-r border-gray-100 text-center">
+                    <div class="text-xs text-gray-500">单号赔率</div>
+                    <div class="flex items-center justify-center gap-2 mt-1">
+                        <input type="number" id="oddsInput" value="48.5" step="0.5" class="w-16 text-center font-bold outline-none" oninput="updateDisplay()">
+                    </div>
+                </div>
+                <div class="p-2 text-center">
+                    <div class="text-xs text-gray-500">单号风险上限</div>
+                    <input type="number" id="riskLimitInput" value="10000" class="w-24 text-center font-bold outline-none text-green-700" oninput="updateDisplay()">
+                </div>
+            </div>
+            <div id="mainGrid" class="grid-table rounded-lg overflow-hidden shadow-sm"></div>
+        </div>
+
+        <!-- 2. 多肖录入区 -->
+        <div id="multiInputSection" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-blue-50 p-3 rounded-lg text-center border border-blue-100">
+                    <div class="text-xs text-blue-600 font-bold uppercase tracking-widest">多肖总额</div>
+                    <div id="multiGrandTotal" class="text-xl font-black text-blue-700">0</div>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">玩家姓名</label>
+                    <input type="text" id="betName" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="姓名">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">点数 (最低100)</label>
+                    <input type="number" id="multiBetAmount" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500" placeholder="100">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 block mb-2">选择生肖 (3-6个) <span id="selCount" class="text-blue-600 ml-2 font-black">已选 0</span></label>
+                <div id="zodiacContainer" class="grid grid-cols-4 md:grid-cols-6 gap-2"></div>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
+                <div class="flex justify-between items-center text-sm font-bold">
+                    <span class="text-gray-500">下注类型：</span>
+                    <span class="text-blue-600" id="multiOddsLabel">请选择 3-6 个生肖</span>
+                </div>
+            </div>
+            <button onclick="submitMultiBet()" id="btnSubmitMulti" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:bg-gray-200 disabled:cursor-not-allowed shadow-lg">确认录入多肖单</button>
+        </div>
+
+        <!-- 3. 生肖组别录入区 -->
+        <div id="groupInputSection" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
+                    <div class="text-xs text-purple-600 font-bold uppercase tracking-widest">组别总额</div>
+                    <div id="groupGrandTotal" class="text-xl font-black text-purple-700">0</div>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">玩家姓名</label>
+                    <input type="text" id="groupBetName" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-purple-500" placeholder="姓名">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">点数 (最低100)</label>
+                    <input type="number" id="groupBetAmount" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-purple-500" placeholder="100">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 block mb-3">选择组别 (赔率 1:1.8)</label>
+                <div id="groupBtnContainer" class="grid grid-cols-2 sm:grid-cols-5 gap-3"></div>
+            </div>
+            <div id="groupPreview" class="bg-purple-50 p-4 rounded-xl border border-dashed border-purple-200 text-xs text-purple-800 hidden">
+                <span class="font-bold mr-2">包含:</span><span id="groupZodiacList"></span>
+            </div>
+            <button onclick="submitGroupBet()" id="btnSubmitGroup" class="w-full py-4 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 disabled:bg-gray-200 disabled:cursor-not-allowed shadow-lg">确认录入组别单</button>
+        </div>
+
+        <!-- 4. N不中录入区 -->
+        <div id="notInputSection" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-green-50 p-3 rounded-lg text-center border border-green-100">
+                    <div class="text-xs text-green-600 font-bold uppercase tracking-widest">不中总额</div>
+                    <div id="notGrandTotal" class="text-xl font-black text-green-700">0</div>
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">玩家姓名</label>
+                    <input type="text" id="notBetName" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-green-500" placeholder="姓名">
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-400 block mb-1">点数 (最低100)</label>
+                    <input type="number" id="notBetAmount" class="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-green-500" placeholder="100">
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-400 block mb-2">选择号码 (5-12个) <span id="notSelCount" class="text-green-600 ml-2 font-black text-xs">已选 0</span></label>
+                <div id="notNumContainer" class="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-10 gap-2"></div>
+            </div>
+            <div class="bg-green-50 p-4 rounded-xl border border-dashed border-green-300">
+                <div class="flex justify-between items-center text-sm font-bold">
+                    <span class="text-gray-500">当前方案：</span>
+                    <span class="text-green-600" id="notOddsLabel">请选择 5-12 个号码</span>
+                </div>
+            </div>
+            <button onclick="submitNotBet()" id="btnSubmitNot" class="w-full py-4 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 disabled:bg-gray-200 disabled:cursor-not-allowed shadow-lg">确认录入不中单</button>
+        </div>
+    </div>
+
+    <!-- 右侧面板 -->
+    <div class="w-full lg:w-[460px] flex flex-col gap-4">
+        <!-- 1. 单号分析面板 -->
+        <div id="directAnalysisPanel" class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
+            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="font-bold text-gray-700 italic">单号风险/分货</h3>
+                <button onclick="copyPassUp()" class="text-xs text-blue-600 hover:underline">复制分货</button>
+            </div>
+            <div class="grid grid-cols-5 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
+                <div class="text-center">号码</div><div class="text-right">录入</div><div class="text-right">赔付额</div><div class="text-right text-orange-600">建议交</div><div class="text-center">结果</div>
+            </div>
+            <div id="sortList" class="flex-1 overflow-y-auto max-h-[600px] lg:max-h-none no-scrollbar"></div>
+        </div>
+
+        <!-- 2. 多肖清单面板 -->
+        <div id="multiBetPanel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
+            <div class="p-4 border-b border-gray-100 bg-gray-50"><h3 class="font-bold text-gray-700 italic">多肖流水表</h3></div>
+            <div class="grid grid-cols-6 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
+                <div class="col-span-1">玩家</div><div class="text-right">金额</div><div class="text-right text-blue-600">赔付额</div><div class="col-span-2 text-center text-xs">组合</div><div class="text-center">状态</div>
+            </div>
+            <div id="multiBetList" class="flex-1 overflow-y-auto max-h-[600px] lg:max-h-none no-scrollbar"></div>
+        </div>
+
+        <!-- 3. 生肖组别清单面板 -->
+        <div id="groupBetPanel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
+            <div class="p-4 border-b border-gray-100 bg-gray-50"><h3 class="font-bold text-gray-700 italic">组别流水表</h3></div>
+            <div class="grid grid-cols-5 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
+                <div>玩家</div><div class="text-right">金额</div><div class="text-right text-purple-600">赔付额</div><div class="text-center">组别</div><div class="text-center">状态</div>
+            </div>
+            <div id="groupBetList" class="flex-1 overflow-y-auto max-h-[600px] lg:max-h-none no-scrollbar"></div>
+        </div>
+
+        <!-- 4. N不中清单面板 -->
+        <div id="notBetPanel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
+            <div class="p-4 border-b border-gray-100 bg-gray-50"><h3 class="font-bold text-gray-700 italic">N不中流水表</h3></div>
+            <!-- 优化表头：去掉数量，改为投注号码 -->
+            <div class="grid grid-cols-6 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
+                <div>玩家</div><div class="text-right">金额</div><div class="text-right text-green-600">赔付额</div><div class="col-span-2 text-center">投注号码</div><div class="text-center text-xs">状态</div>
+            </div>
+            <div id="notBetList" class="flex-1 overflow-y-auto max-h-[600px] lg:max-h-none no-scrollbar"></div>
+        </div>
+
+        <div class="p-4 bg-white rounded-xl border border-gray-200 space-y-2">
+            <div id="lockWarning" class="hidden text-center text-xs text-red-600 font-bold mb-1 italic">本期已开奖，数据已锁定！</div>
+            <button onclick="showClearModal()" class="w-full py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition">清空数据 (开启下一期)</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalOverlay" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div id="clearModal" class="bg-white rounded-2xl p-6 max-w-sm w-full hidden text-center shadow-xl">
+        <h3 class="text-xl font-bold mb-2 text-red-600">确认开启新一期？</h3>
+        <p class="text-gray-500 text-sm mb-6">这将清除所有流水记录。</p>
+        <div class="flex gap-3">
+            <button onclick="confirmClear()" class="flex-1 py-2.5 bg-red-600 text-white rounded-lg font-bold">确定</button>
+            <button onclick="hideModal()" class="flex-1 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-bold">取消</button>
+        </div>
+    </div>
+    <div id="pasteModal" class="bg-white rounded-2xl p-6 max-w-md w-full hidden">
+        <h3 class="text-xl font-bold mb-4 text-center">手动录入开奖</h3>
+        <label class="text-xs font-bold text-gray-500 block mb-1">开奖期号</label>
+        <input id="manualIssueInput" class="w-full p-3 border rounded-xl text-sm mb-3 outline-none" placeholder="例如：2026001">
+        <label class="text-xs font-bold text-gray-500 block mb-1">开奖号码（6正 + 1特）</label>
+        <input id="manualNumsInput" class="w-full p-3 border rounded-xl text-sm mb-2 outline-none" placeholder="例如：01, 12, 15, 23, 34, 40, 49">
+        <div id="manualError" class="hidden text-xs text-red-600 font-bold mb-3"></div>
+        <button onclick="processPasteData()" class="w-full py-2.5 bg-blue-600 text-white rounded-lg font-bold">解析开奖</button>
+    </div>
+    <div id="aiModal" class="bg-white rounded-2xl p-6 max-w-4xl w-full hidden shadow-xl max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold">AI识别汇总录入</h3>
+            <button onclick="hideModal()" class="text-gray-400 hover:text-gray-700 text-sm font-bold">关闭</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+            <div class="md:col-span-2">
+                <label class="text-xs font-bold text-gray-500 block mb-1">DeepSeek API Key</label>
+                <input id="aiApiKeyInput" type="password" class="w-full p-3 border rounded-xl text-sm outline-none" placeholder="DeepSeek API Key">
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 block mb-1">模型</label>
+                <input id="aiModelInput" class="w-full p-3 border rounded-xl text-sm outline-none" value="deepseek-v4-pro">
+            </div>
+        </div>
+        <label class="text-xs font-bold text-gray-500 block mb-1">粘贴需要识别的投注内容</label>
+        <textarea id="aiRawInput" class="w-full h-36 p-3 border rounded-xl text-sm outline-none mb-3" placeholder="随便粘贴，例如：01号100，五不中 03 08 12 19 28 300，马蛇龙 500"></textarea>
+        <div class="flex flex-wrap gap-2 mb-3">
+            <button onclick="runAiParse()" id="btnRunAiParse" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700">AI解析</button>
+            <button onclick="clearAiDraft()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-300">清空预览</button>
+            <button onclick="importAiDraft()" id="btnImportAiDraft" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold hover:bg-blue-700 disabled:bg-gray-200 disabled:cursor-not-allowed" disabled>确认导入</button>
+        </div>
+        <div id="aiStatus" class="hidden text-xs font-bold mb-3"></div>
+        <div class="border rounded-xl overflow-hidden">
+            <div class="grid grid-cols-12 bg-gray-50 text-[11px] font-bold text-gray-500 p-2 border-b">
+                <div class="col-span-2">玩法</div>
+                <div class="col-span-5">内容（可修改）</div>
+                <div class="col-span-2 text-right">金额</div>
+                <div class="col-span-2 text-center">状态</div>
+                <div class="col-span-1 text-center">操作</div>
+            </div>
+            <div id="aiPreviewList" class="divide-y text-xs">
+                <div class="p-8 text-center text-gray-400">等待 AI 识别</div>
+            </div>
+        </div>
+        <div id="aiSummary" class="text-right text-sm font-black text-gray-700 mt-3">本次识别总额：0</div>
+    </div>
+</div>
+
+<script>
+    const zodiacs = ["马", "蛇", "龙", "兔", "虎", "牛", "鼠", "猪", "狗", "鸡", "猴", "羊"];
+    const multiOddsMap = { 3: 3.5, 4: 2.5, 5: 2.0, 6: 1.8 };
+    const notOddsMap = { 5: 2.0, 6: 2.5, 7: 3.0, 8: 3.5, 9: 4.0, 10: 5.0, 11: 6.0, 12: 7.0 };
+    const zodiacGroups = {
+        "天肖": ["猪", "牛", "猴", "马", "兔", "龙"], "地肖": ["蛇", "羊", "鸡", "狗", "鼠", "虎"],
+        "男肖": ["鼠", "牛", "虎", "龙", "马", "猴", "狗"], "女肖": ["兔", "蛇", "羊", "鸡", "猪"],
+        "家肖": ["牛", "马", "羊", "鸡", "狗", "猪"], "野肖": ["鼠", "虎", "兔", "龙", "蛇", "猴"],
+        "大肖": ["牛", "虎", "马", "羊", "狗", "猪"], "小肖": ["鼠", "兔", "龙", "蛇", "猴", "鸡"],
+        "单肖": ["龙", "虎", "鼠", "狗", "猴", "马"], "双肖": ["牛", "兔", "蛇", "羊", "鸡", "猪"]
+    };
+
+    const redNums = [1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46];
+    const blueNums = [3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48];
+    const API_PATH = "https://macaumarksix.com/api/macaujc2.com";
+
+    const EMPTY_BET_DATA = () => Array.from({ length: 49 }, (_, i) => ({ id: i + 1, value: 0 }));
+    let storageWasReset = false;
+
+    function toMoneyInt(value) {
+        const num = Number(value);
+        return Number.isFinite(num) ? Math.max(0, Math.round(num)) : 0;
+    }
+
+    function parseAmountInput(id) {
+        return toMoneyInt(document.getElementById(id).value);
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        }[ch]));
+    }
+
+    function safeJsonRead(key, fallback, validator) {
+        const raw = localStorage.getItem(key);
+        if (raw === null) return fallback();
+        try {
+            const data = JSON.parse(raw);
+            if (validator(data)) return data;
+        } catch (e) {
+            console.warn(`本地数据 ${key} 损坏，已重置。`, e);
+        }
+        localStorage.removeItem(key);
+        storageWasReset = true;
+        return fallback();
+    }
+
+    function isValidIssue(issue) {
+        return /^\d+$/.test(String(issue || '').trim());
+    }
+
+    function isValidOpenNums(nums) {
+        return Array.isArray(nums) && nums.length === 7 &&
+            nums.every(n => Number.isInteger(n) && n >= 1 && n <= 49) &&
+            new Set(nums).size === 7;
+    }
+
+    function normalizeNums(nums) {
+        return nums.map(n => Number(n)).filter(n => Number.isInteger(n));
+    }
+
+    function validateBetData(data) {
+        return Array.isArray(data) && data.length === 49 && data.every((item, idx) =>
+            item && item.id === idx + 1 && Number.isFinite(Number(item.value)) && Number(item.value) >= 0
+        );
+    }
+
+    function validateMultiBets(data) {
+        return Array.isArray(data) && data.every(b =>
+            b && typeof b.name === 'string' && Number.isInteger(b.amount) && b.amount >= 100 &&
+            Array.isArray(b.zodiacs) && b.zodiacs.length >= 3 && b.zodiacs.length <= 6 &&
+            b.zodiacs.every(z => zodiacs.includes(z))
+        );
+    }
+
+    function validateGroupBets(data) {
+        return Array.isArray(data) && data.every(b =>
+            b && typeof b.name === 'string' && Number.isInteger(b.amount) && b.amount >= 100 &&
+            Object.prototype.hasOwnProperty.call(zodiacGroups, b.groupName)
+        );
+    }
+
+    function validateNotBets(data) {
+        return Array.isArray(data) && data.every(b => {
+            const nums = normalizeNums(b?.nums || []);
+            return b && typeof b.name === 'string' && Number.isInteger(b.amount) && b.amount >= 100 &&
+                nums.length >= 5 && nums.length <= 12 && nums.every(n => n >= 1 && n <= 49) &&
+                new Set(nums).size === nums.length;
+        });
+    }
+
+    let betData = safeJsonRead('macau_bet_v4', EMPTY_BET_DATA, validateBetData)
+        .map((item, idx) => ({ id: idx + 1, value: toMoneyInt(item.value) }));
+    let multiBets = safeJsonRead('macau_multi_bets', () => [], validateMultiBets);
+    let groupBets = safeJsonRead('macau_group_bets', () => [], validateGroupBets);
+    let notBets = safeJsonRead('macau_not_bets', () => [], validateNotBets)
+        .map(b => ({ ...b, nums: normalizeNums(b.nums).sort((a, c) => a - c) }));
+    let bettingPeriod = localStorage.getItem('macau_bet_period') || null;
+    let latestIssue = null, lastSpecialNum = null, openNums = [], isLocked = false;
+    let selectedZodiacs = [], selectedGroupName = null, selectedNotNums = [];
+    let lotteryDataValid = false, statusWarning = '';
+    let aiDraftRows = [];
+
+    function getColorClass(n) { return redNums.includes(n) ? 'ball-red' : (blueNums.includes(n) ? 'ball-blue' : 'ball-green'); }
+    function getZodiacName(num) { return zodiacs[(num - 1) % 12]; }
+    function canSettle() { return lotteryDataValid && bettingPeriod && latestIssue && bettingPeriod === latestIssue; }
+    function formatNum(n) { return n < 10 ? '0' + n : String(n); }
+    function parseNumberList(text) {
+        return String(text || '').split(/[\s,，、/]+/).map(s => s.trim()).filter(Boolean).map(Number).filter(n => Number.isInteger(n));
+    }
+    function parseZodiacList(text) {
+        const raw = String(text || '').trim();
+        const tokens = raw.includes(',') || raw.includes('，') || raw.includes('、') || /\s/.test(raw)
+            ? raw.split(/[\s,，、/]+/).filter(Boolean)
+            : Array.from(raw);
+        return tokens.map(s => s.trim()).filter(Boolean);
+    }
+    function saveBetData() { localStorage.setItem('macau_bet_v4', JSON.stringify(betData)); }
+    function saveMultiBets() { localStorage.setItem('macau_multi_bets', JSON.stringify(multiBets)); }
+    function saveGroupBets() { localStorage.setItem('macau_group_bets', JSON.stringify(groupBets)); }
+    function saveNotBets() { localStorage.setItem('macau_not_bets', JSON.stringify(notBets)); }
+    function setStatusWarning(message) {
+        statusWarning = message || '';
+        const w = document.getElementById('lockWarning');
+        if (!w) return;
+        if (statusWarning) {
+            w.innerText = statusWarning;
+            w.classList.remove('hidden');
+        } else {
+            w.innerText = '本期已开奖，数据已锁定！';
+        }
+    }
+
+    function startCountdown() {
+        setInterval(() => {
+            const now = new Date(), target = new Date();
+            target.setHours(21, 30, 0, 0);
+            if (now > target) target.setDate(target.getDate() + 1);
+            const diff = target - now;
+            const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
+            document.getElementById('countdownTimer').innerText = `下期倒计时 ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }, 1000);
+    }
+
+    function switchTab(type) {
+        ['direct', 'multi', 'group', 'not'].forEach(t => {
+            document.getElementById(`${t}InputSection`).classList.add('hidden');
+            const panel = document.getElementById(`${t === 'direct' ? 'directAnalysis' : t + 'Bet'}Panel`);
+            if (panel) panel.classList.add('hidden');
+            document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "px-6 py-2 font-bold text-sm text-gray-500 hover:text-blue-600 transition";
+        });
+        document.getElementById(`${type}InputSection`).classList.remove('hidden');
+        const activePanel = document.getElementById(`${type === 'direct' ? 'directAnalysis' : type + 'Bet'}Panel`);
+        if (activePanel) activePanel.classList.remove('hidden');
+        document.getElementById(`tab${type.charAt(0).toUpperCase() + type.slice(1)}`).className = "px-6 py-2 font-bold text-sm border-b-2 border-blue-600 text-blue-600";
+        if(type === 'multi') updateMultiBetList();
+        else if(type === 'group') updateGroupBetList();
+        else if(type === 'not') updateNotBetList();
+        else updateDisplay();
+    }
+
+    function initSelectors() {
+        const zCon = document.getElementById('zodiacContainer');
+        zCon.innerHTML = zodiacs.map(z => `<button onclick="toggleZodiac('${z}')" id="zBtn_${z}" class="zodiac-btn border border-gray-200 rounded-lg py-3 text-sm font-bold transition">${escapeHtml(z)}</button>`).join('');
+        const gCon = document.getElementById('groupBtnContainer');
+        gCon.innerHTML = Object.keys(zodiacGroups).map(g => `<button onclick="selectGroup('${g}')" id="gBtn_${g}" class="group-btn border border-gray-200 rounded-lg py-3 text-sm font-bold transition">${escapeHtml(g)}</button>`).join('');
+        const nCon = document.getElementById('notNumContainer');
+        nCon.innerHTML = Array.from({length: 49}, (_, i) => i + 1).map(n => `<button onclick="toggleNotNum(${n})" id="nBtn_${n}" class="not-num-btn w-full h-14 rounded-lg ${getColorClass(n)} text-white text-xl font-black flex items-center justify-center transition shadow-sm border-2 border-transparent">${formatNum(n)}</button>`).join('');
+        updateMultiPreview();
+        selectGroup(null);
+        updateNotPreview();
+    }
+
+    function toggleZodiac(z) { if(isLocked) return; const idx = selectedZodiacs.indexOf(z); if(idx > -1) selectedZodiacs.splice(idx, 1); else if(selectedZodiacs.length < 6) selectedZodiacs.push(z); updateMultiPreview(); }
+    function updateMultiPreview() {
+        zodiacs.forEach(z => document.getElementById(`zBtn_${z}`).className = selectedZodiacs.includes(z) ? 'zodiac-btn border rounded-lg py-3 text-sm font-bold active' : 'zodiac-btn border border-gray-200 rounded-lg py-3 text-sm font-bold transition hover:border-blue-400');
+        const count = selectedZodiacs.length;
+        document.getElementById('selCount').innerText = `已选 ${count}`;
+        document.getElementById('multiOddsLabel').innerText = count >= 3 ? `下注方案：${count}肖 (赔率 1:${multiOddsMap[count]})` : "请至少选择 3 个生肖";
+        document.getElementById('btnSubmitMulti').disabled = (count < 3 || isLocked);
+    }
+
+    function toggleNotNum(n) {
+        if(isLocked) return;
+        const idx = selectedNotNums.indexOf(n);
+        if(idx > -1) selectedNotNums.splice(idx, 1);
+        else if(selectedNotNums.length < 12) selectedNotNums.push(n);
+        updateNotPreview();
+    }
+    function updateNotPreview() {
+        Array.from({length: 49}, (_, i) => i + 1).forEach(n => document.getElementById(`nBtn_${n}`).classList.toggle('active', selectedNotNums.includes(n)));
+        const count = selectedNotNums.length;
+        const sortedNums = [...selectedNotNums].sort((a, b) => b - a);
+        const numsDisplay = sortedNums.length > 0 ? ` (${sortedNums.map(formatNum).join(', ')})` : "";
+        document.getElementById('notSelCount').innerHTML = `已选 ${count}<span class="text-gray-400 font-normal ml-1 text-[11px]">${escapeHtml(numsDisplay)}</span>`;
+        document.getElementById('notOddsLabel').innerText = count >= 5 ? `${count}不中 (赔率 1:${notOddsMap[count]})` : "请选择 5-12 个号码";
+        document.getElementById('btnSubmitNot').disabled = (count < 5 || isLocked);
+    }
+
+    function selectGroup(g) {
+        if(isLocked) return;
+        selectedGroupName = (g && Object.prototype.hasOwnProperty.call(zodiacGroups, g) && selectedGroupName !== g) ? g : null;
+        Object.keys(zodiacGroups).forEach(name => document.getElementById(`gBtn_${name}`).className = (selectedGroupName === name) ? 'group-btn border rounded-lg py-3 text-sm font-bold active group-btn' : 'group-btn border border-gray-200 rounded-lg py-3 text-sm font-bold transition hover:border-purple-400');
+        const pre = document.getElementById('groupPreview');
+        if(selectedGroupName) { pre.classList.remove('hidden'); document.getElementById('groupZodiacList').innerText = zodiacGroups[selectedGroupName].join('、'); }
+        else { pre.classList.add('hidden'); }
+        document.getElementById('btnSubmitGroup').disabled = (!selectedGroupName || isLocked);
+    }
+
+    function submitMultiBet() {
+        const name = document.getElementById('betName').value.trim() || "无名", amount = parseAmountInput('multiBetAmount');
+        if(isLocked) return alert("本期已锁定，不能继续录入");
+        if(amount < 100) return alert("最低100点");
+        if(selectedZodiacs.length < 3 || selectedZodiacs.length > 6) return alert("多肖必须选择 3-6 个生肖");
+        multiBets.push({ name, amount, zodiacs: [...selectedZodiacs], timestamp: Date.now() });
+        saveMultiBets();
+        selectedZodiacs = []; document.getElementById('betName').value = ''; document.getElementById('multiBetAmount').value = ''; updateMultiPreview(); updateMultiBetList();
+    }
+
+    function submitGroupBet() {
+        const name = document.getElementById('groupBetName').value.trim() || "无名", amount = parseAmountInput('groupBetAmount');
+        if(isLocked) return alert("本期已锁定，不能继续录入");
+        if(amount < 100) return alert("最低100点");
+        if(!selectedGroupName || !Object.prototype.hasOwnProperty.call(zodiacGroups, selectedGroupName)) return alert("请选择有效组别");
+        groupBets.push({ name, amount, groupName: selectedGroupName, timestamp: Date.now() });
+        saveGroupBets();
+        selectedGroupName = null; document.getElementById('groupBetName').value = ''; document.getElementById('groupBetAmount').value = ''; selectGroup(null); updateGroupBetList();
+    }
+
+    function submitNotBet() {
+        const name = document.getElementById('notBetName').value.trim() || "无名", amount = parseAmountInput('notBetAmount');
+        if(isLocked) return alert("本期已锁定，不能继续录入");
+        if(amount < 100) return alert("最低100点");
+        if(selectedNotNums.length < 5 || selectedNotNums.length > 12) return alert("N不中必须选择 5-12 个号码");
+        notBets.push({ name, amount, nums: [...selectedNotNums].sort((a, b) => a - b), timestamp: Date.now() });
+        saveNotBets();
+        selectedNotNums = []; document.getElementById('notBetName').value = ''; document.getElementById('notBetAmount').value = ''; updateNotPreview(); updateNotBetList();
+    }
+
+    function updateMultiBetList() {
+        const total = multiBets.reduce((s, b) => s + toMoneyInt(b.amount), 0);
+        document.getElementById('multiGrandTotal').innerText = total.toLocaleString();
+        const isThisPeriodDrawn = canSettle();
+        const winZ = isThisPeriodDrawn ? getZodiacName(lastSpecialNum) : null;
+        document.getElementById('multiBetList').innerHTML = multiBets.slice().reverse().map((b, idx) => {
+            const isWin = winZ && b.zodiacs.includes(winZ);
+            return `<div class="grid grid-cols-6 p-3 border-b border-gray-50 items-center text-xs hover:bg-gray-50 ${isWin ? 'bg-yellow-50 ring-1 ring-yellow-200' : ''}">
+                <div class="truncate font-bold">${escapeHtml(b.name)}</div><div class="text-right">${toMoneyInt(b.amount).toLocaleString()}</div><div class="text-right text-blue-600 font-bold">${Math.round(toMoneyInt(b.amount)*multiOddsMap[b.zodiacs.length]).toLocaleString()}</div>
+                <div class="col-span-2 text-center text-gray-500">${escapeHtml(b.zodiacs.join('、'))}</div>
+                <div class="text-center font-bold">${isThisPeriodDrawn ? (isWin ? '<span class="text-yellow-600">★中奖</span>' : '<span class="text-gray-300">未中</span>') : (isLocked ? '等待' : `<button onclick="deleteBet('multi', ${multiBets.length-1-idx})" class="text-red-400 underline">删</button>`)}</div>
+            </div>`;
+        }).join('') || '<div class="p-10 text-center text-gray-400">暂无流水</div>';
+    }
+
+    function updateGroupBetList() {
+        const total = groupBets.reduce((s, b) => s + toMoneyInt(b.amount), 0);
+        document.getElementById('groupGrandTotal').innerText = total.toLocaleString();
+        const isThisPeriodDrawn = canSettle();
+        const winZ = isThisPeriodDrawn ? getZodiacName(lastSpecialNum) : null;
+        document.getElementById('groupBetList').innerHTML = groupBets.slice().reverse().map((b, idx) => {
+            const group = zodiacGroups[b.groupName] || [];
+            const isWin = winZ && group.includes(winZ);
+            return `<div class="grid grid-cols-5 p-3 border-b border-gray-50 items-center text-xs hover:bg-gray-50 ${isWin ? 'bg-purple-50 ring-1 ring-purple-200' : ''}">
+                <div class="truncate font-bold">${escapeHtml(b.name)}</div><div class="text-right">${toMoneyInt(b.amount).toLocaleString()}</div><div class="text-right text-purple-600 font-bold">${Math.round(toMoneyInt(b.amount)*1.8).toLocaleString()}</div>
+                <div class="text-center text-purple-700 font-bold">${escapeHtml(b.groupName)}</div>
+                <div class="text-center font-bold">${isThisPeriodDrawn ? (isWin ? '<span class="text-purple-600">★中奖</span>' : '<span class="text-gray-300">未中</span>') : (isLocked ? '等待' : `<button onclick="deleteBet('group', ${groupBets.length-1-idx})" class="text-red-400 underline">删</button>`)}</div>
+            </div>`;
+        }).join('') || '<div class="p-10 text-center text-gray-400">暂无流水</div>';
+    }
+
+    function updateNotBetList() {
+        const total = notBets.reduce((s, b) => s + toMoneyInt(b.amount), 0);
+        document.getElementById('notGrandTotal').innerText = total.toLocaleString();
+        const isThisPeriodDrawn = canSettle();
+        document.getElementById('notBetList').innerHTML = notBets.slice().reverse().map((b, idx) => {
+            const nums = normalizeNums(b.nums);
+            const isLost = isThisPeriodDrawn && openNums.some(n => nums.includes(n));
+            const isWin = isThisPeriodDrawn && !isLost && openNums.length === 7;
+            const displayNums = [...nums].sort((x, y) => y - x).map(formatNum).join(',');
+            return `<div class="grid grid-cols-6 p-4 border-b border-gray-50 items-center text-xs hover:bg-gray-50 ${isWin ? 'bg-green-50 ring-1 ring-green-200' : (isLost ? 'bg-red-50 grayscale-[0.5]' : '')}">
+                <div class="truncate font-bold">${escapeHtml(b.name)}</div><div class="text-right">${toMoneyInt(b.amount).toLocaleString()}</div><div class="text-right text-green-600 font-bold">${Math.round(toMoneyInt(b.amount)*notOddsMap[nums.length]).toLocaleString()}</div>
+                <div class="col-span-2 text-center text-[10px] text-gray-500 font-medium break-all px-2">${escapeHtml(displayNums)}</div>
+                <div class="text-center font-bold">
+                    ${isThisPeriodDrawn ? (isWin ? '<span class="text-green-600">★中奖</span>' : (isLost ? '<span class="text-red-400">未中</span>' : '等待')) : (isLocked ? '等待' : `<button onclick="deleteBet('not', ${notBets.length-1-idx})" class="text-red-400 underline">删</button>`)}
+                </div>
+            </div>`;
+        }).join('') || '<div class="p-10 text-center text-gray-400">暂无流水</div>';
+    }
+
+    function deleteBet(type, idx) {
+        if(isLocked) return;
+        if(type === 'multi') multiBets.splice(idx, 1); else if(type === 'group') groupBets.splice(idx, 1); else notBets.splice(idx, 1);
+        if(type === 'multi') saveMultiBets(); else if(type === 'group') saveGroupBets(); else saveNotBets();
+        type === 'multi' ? updateMultiBetList() : (type === 'group' ? updateGroupBetList() : updateNotBetList());
+    }
+
+    function setSyncState(state, message) {
+        const dot = document.getElementById('syncDot'), txt = document.getElementById('syncText');
+        const color = state === 'ok' ? 'bg-green-500' : (state === 'warn' ? 'bg-red-500' : 'bg-yellow-500 syncing');
+        dot.className = `w-2.5 h-2.5 rounded-full ${color}`;
+        txt.innerText = message;
+    }
+
+    function validateLotteryPayload(issue, nums) {
+        if (!isValidIssue(issue)) return { ok: false, message: '开奖期号无效，请手动录入校验。' };
+        if (!isValidOpenNums(nums)) return { ok: false, message: '开奖数据异常：必须是 7 个 1-49 的不重复号码。' };
+        return { ok: true };
+    }
+
+    async function triggerAutoFetch() {
+        setSyncState('sync', '同步中...');
+        try {
+            const res = await fetch(`${API_PATH}?_t=${Date.now()}`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            parseLotteryData(data);
+        } catch (e) {
+            lotteryDataValid = false;
+            setSyncState('warn', '同步失败');
+            setStatusWarning('自动同步失败，请手动录入校验。');
+            checkLockState();
+        }
+    }
+
+    function parseLotteryData(json) {
+        try {
+            let latest = Array.isArray(json) ? json[0] : (json.data ? (Array.isArray(json.data) ? json.data[0] : Object.values(json.data)[0]) : json);
+            const openCode = latest.openCode || latest.opencode, openTime = latest.openTime || latest.opentime;
+            const nums = String(openCode || '').split(/[\s,，、/]+/).filter(Boolean).map(n => Number(n));
+            const issue = String(latest.expect || latest.issue || '').trim();
+            const validation = validateLotteryPayload(issue, nums);
+            if (!validation.ok) throw new Error(validation.message);
+            openNums = nums;
+            latestIssue = issue;
+            lastSpecialNum = openNums[openNums.length - 1];
+            lotteryDataValid = true;
+            setStatusWarning('');
+            if (openTime) { const d = new Date(openTime.replace(/-/g, '/')); document.getElementById('latestDate').innerText = `${d.getMonth()+1}月${d.getDate()}日`; }
+            if (!bettingPeriod) { bettingPeriod = (parseInt(latestIssue) + 1).toString(); localStorage.setItem('macau_bet_period', bettingPeriod); }
+            updateLotteryUI(latestIssue, openNums);
+            setSyncState('ok', '同步成功');
+            checkLockState();
+        } catch (e) {
+            lotteryDataValid = false;
+            setSyncState('warn', '同步异常');
+            setStatusWarning(e.message || '开奖数据异常，请手动录入校验。');
+            checkLockState();
+        }
+    }
+
+    function checkLockState() {
+        isLocked = (latestIssue && bettingPeriod && parseInt(bettingPeriod) <= parseInt(latestIssue));
+        const s = document.getElementById('lockStatus'), w = document.getElementById('lockWarning');
+        const settled = canSettle();
+        s.innerText = settled ? "锁定/开奖" : (isLocked ? "等待确认" : "接受投注");
+        s.className = `ml-2 text-xs font-normal px-2 py-0.5 rounded ${isLocked?'bg-red-100 text-red-600':'bg-green-100 text-green-600'}`;
+        w.classList.toggle('hidden', !isLocked && !statusWarning);
+        if (statusWarning) w.innerText = statusWarning; else w.innerText = settled ? '本期已开奖，数据已锁定！' : '期号未一致，等待本期开奖。';
+        document.getElementById('bettingPeriodDisplay').innerText = bettingPeriod || '---';
+        document.querySelectorAll('.bet-input').forEach(i => i.disabled = isLocked);
+        updateMultiBetList(); updateGroupBetList(); updateNotBetList(); updateDisplay();
+    }
+
+    function updateLotteryUI(issue, nums) {
+        document.getElementById('latestIssue').innerText = issue;
+        document.getElementById('lotteryBalls').innerHTML = nums.map((n, i) => `<div class="flex flex-col items-center"><div class="w-6 h-6 rounded-full ${getColorClass(n)} text-white flex items-center justify-center font-bold text-[10px] shadow-sm ${i===6?'ring-2 ring-yellow-400':''}"> ${formatNum(n)} </div><span class="text-[8px] text-gray-500 mt-0.5">${escapeHtml(getZodiacName(n))}</span></div>${i===5?'<div class="flex items-center text-gray-500 px-1">+</div>':''}`).join('');
+    }
+
+    function initTable() {
+        document.getElementById('mainGrid').innerHTML = betData.map((item, idx) => `<div class="number-row border-b border-r border-gray-100"><div class="text-[10px] text-gray-400 w-4">${escapeHtml(getZodiacName(item.id))}</div><div class="w-6 h-6 rounded-full ${getColorClass(item.id)} text-white text-[10px] flex items-center justify-center font-bold mx-2">${item.id}</div><input type="number" min="0" step="1" class="bet-input" value="${item.value > 0 ? Math.round(item.value) : ''}" placeholder="0" oninput="handleInput(${idx}, this.value)" onfocus="this.select()" ${isLocked ? 'disabled' : ''}></div>`).join('');
+    }
+
+    function handleInput(idx, val) { if(isLocked) return; betData[idx].value = toMoneyInt(val); saveBetData(); updateDisplay(); }
+
+    function updateDisplay() {
+        const total = betData.reduce((s, i) => s + toMoneyInt(i.value), 0), odds = Number(document.getElementById('oddsInput').value) || 0, rL = toMoneyInt(document.getElementById('riskLimitInput').value);
+        document.getElementById('grandTotal').innerText = Math.round(total).toLocaleString();
+        const isThisPeriodDrawn = canSettle();
+        let analysis = betData.filter(i => i.value > 0 || (isThisPeriodDrawn && i.id === lastSpecialNum)).map(item => {
+            const value = toMoneyInt(item.value);
+            const payout = Math.round(value * odds);
+            const passUp = (odds > 0 && payout > rL) ? Math.ceil((payout - rL) / odds) : 0;
+            return { ...item, value, payout, passUp };
+        });
+        analysis.sort((a, b) => a.payout - b.payout);
+        document.getElementById('sortList').innerHTML = analysis.map(item => `
+            <div class="grid grid-cols-5 p-3 border-b border-gray-50 items-center text-xs hover:bg-gray-50 ${isThisPeriodDrawn && item.id === lastSpecialNum ? 'bg-yellow-50 ring-1 ring-yellow-200' : ''}">
+                <div class="flex flex-col items-center"><span class="font-bold">${escapeHtml(getZodiacName(item.id))}</span><span class="text-[10px] px-1 rounded ${getColorClass(item.id)} text-white">${item.id}</span></div>
+                <div class="text-right font-medium text-gray-600">${Math.round(item.value).toLocaleString()}</div>
+                <div class="text-right font-bold ${item.payout > rL ? 'text-red-500' : 'text-green-600'}">${item.payout.toLocaleString()}</div>
+                <div class="text-right font-black text-orange-600">${item.passUp > 0 ? item.passUp.toLocaleString() : '--'}</div>
+                <div class="text-center font-bold">${isThisPeriodDrawn && item.id === lastSpecialNum ? '<span class="text-yellow-600">中奖</span>' : (item.payout > rL ? '<span class="text-red-400">爆单</span>' : '平')}</div>
+            </div>
+        `).join('') || '<div class="p-10 text-center text-gray-400">无单号投注</div>';
+    }
+
+    function copyPassUp() {
+        const odds = Number(document.getElementById('oddsInput').value) || 0, rL = toMoneyInt(document.getElementById('riskLimitInput').value);
+        const lines = betData.map(item => {
+            const value = toMoneyInt(item.value);
+            const payout = Math.round(value * odds);
+            const passUp = (odds > 0 && payout > rL) ? Math.ceil((payout - rL) / odds) : 0;
+            return passUp > 0 ? `${formatNum(item.id)} ${getZodiacName(item.id)} 分货 ${passUp}` : null;
+        }).filter(Boolean);
+        if (!lines.length) return alert('当前没有需要分货的号码');
+        const text = lines.join('\n');
+        if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(text).then(() => alert('分货内容已复制'), () => prompt('请手动复制分货内容', text));
+        } else {
+            prompt('请手动复制分货内容', text);
+        }
+    }
+
+    function confirmClear() {
+        betData.forEach(i => i.value = 0); multiBets = []; groupBets = []; notBets = [];
+        localStorage.removeItem('macau_bet_v4'); localStorage.removeItem('macau_multi_bets'); localStorage.removeItem('macau_group_bets'); localStorage.removeItem('macau_not_bets');
+        if (latestIssue) { bettingPeriod = (parseInt(latestIssue) + 1).toString(); localStorage.setItem('macau_bet_period', bettingPeriod); }
+        isLocked = false; initTable(); updateMultiBetList(); updateGroupBetList(); updateNotBetList(); hideModal();
+    }
+
+    function showClearModal() { document.getElementById('modalOverlay').style.display='flex'; document.getElementById('clearModal').style.display='block'; document.getElementById('pasteModal').style.display='none'; document.getElementById('aiModal').style.display='none'; }
+    function showPasteModal() { document.getElementById('modalOverlay').style.display='flex'; document.getElementById('pasteModal').style.display='block'; document.getElementById('clearModal').style.display='none'; document.getElementById('aiModal').style.display='none'; document.getElementById('manualError').classList.add('hidden'); }
+    function hideModal() { document.getElementById('modalOverlay').style.display='none'; document.getElementById('clearModal').style.display='none'; document.getElementById('pasteModal').style.display='none'; document.getElementById('aiModal').style.display='none'; }
+
+    function showManualError(message) {
+        const el = document.getElementById('manualError');
+        el.innerText = message;
+        el.classList.remove('hidden');
+    }
+
+    function processPasteData() {
+        const periodVal = document.getElementById('manualIssueInput').value.trim();
+        const codesVal = document.getElementById('manualNumsInput').value.trim();
+        if (!periodVal || !codesVal) return showManualError('录入内容不能为空，请输入合规数据');
+        if (!isValidIssue(periodVal)) return showManualError('开奖期号必须为数字');
+        const parts = codesVal.split(/[\s,，、/]+/).map(s => s.trim()).filter(Boolean);
+        if (!parts.length) return showManualError('录入内容不能为空，请输入合规数据');
+        if (parts.some(p => !/^\d+$/.test(p))) return showManualError('开奖号码只能包含数字和分隔符');
+        const periodNum = Number(periodVal);
+        const nums = parts.map(Number).filter(n => n !== periodNum);
+        const validation = validateLotteryPayload(periodVal, nums);
+        if (!validation.ok) return showManualError('疑似包含期号或格式错误：' + validation.message);
+        latestIssue = periodVal;
+        openNums = nums;
+        lastSpecialNum = openNums[6];
+        lotteryDataValid = true;
+        if (!bettingPeriod) {
+            bettingPeriod = (parseInt(latestIssue) + 1).toString();
+            localStorage.setItem('macau_bet_period', bettingPeriod);
+        }
+        setStatusWarning('');
+        updateLotteryUI(latestIssue, openNums);
+        checkLockState();
+        setSyncState('ok', '手动校验');
+        hideModal();
+    }
+
+    function showAiModal() {
+        document.getElementById('modalOverlay').style.display='flex';
+        document.getElementById('clearModal').style.display='none';
+        document.getElementById('pasteModal').style.display='none';
+        document.getElementById('aiModal').style.display='block';
+        document.getElementById('aiStatus').classList.add('hidden');
+        const savedKey = localStorage.getItem('deepseek_api_key') || document.getElementById('aiApiKeyInput').defaultValue || '';
+        document.getElementById('aiApiKeyInput').value = savedKey;
+    }
+
+    function setAiStatus(message, type = 'info') {
+        const el = document.getElementById('aiStatus');
+        el.innerText = message;
+        el.className = `text-xs font-bold mb-3 ${type === 'error' ? 'text-red-600' : (type === 'ok' ? 'text-emerald-600' : 'text-gray-500')}`;
+        el.classList.remove('hidden');
+    }
+
+    function clearAiDraft() {
+        aiDraftRows = [];
+        document.getElementById('aiPreviewList').innerHTML = '<div class="p-8 text-center text-gray-400">等待 AI 识别</div>';
+        document.getElementById('aiSummary').innerText = '本次识别总额：0';
+        document.getElementById('btnImportAiDraft').disabled = true;
+        document.getElementById('aiStatus').classList.add('hidden');
+    }
+
+    function buildAiPrompt(rawText) {
+        return `你是投注文本结构化解析器。请只返回 JSON，不要解释，不要 Markdown。
+目标：从用户粘贴的混乱文本中识别汇总投注，不需要玩家姓名。
+允许玩法：
+1. direct 单号：number 为 1-49，amount 为整数。
+2. multi 多肖：zodiacs 为 3-6 个生肖，生肖只能是：${zodiacs.join('、')}，amount 为整数。
+3. group 生肖组别：groupName 只能是：${Object.keys(zodiacGroups).join('、')}，amount 为整数。
+4. not N不中：nums 为 5-12 个 1-49 的不重复号码，amount 为整数。
+赔率不用计算。无法确定金额、玩法、号码、生肖、组别时，不要编造，放入 warnings。
+返回格式必须是：
+{"direct":[{"number":1,"amount":100}],"multi":[{"zodiacs":["马","蛇","龙"],"amount":100}],"group":[{"groupName":"天肖","amount":100}],"not":[{"nums":[1,2,3,4,5],"amount":100}],"warnings":["..."]}
+用户原文：
+${rawText}`;
+    }
+
+    function parseAiJson(content) {
+        const text = String(content || '').trim();
+        try { return JSON.parse(text); } catch (e) {}
+        const match = text.match(/\{[\s\S]*\}/);
+        if (!match) throw new Error('AI 未返回可解析 JSON');
+        return JSON.parse(match[0]);
+    }
+
+    function normalizeAiDraft(data) {
+        const rows = [];
+        const warnings = Array.isArray(data?.warnings) ? data.warnings.map(String) : [];
+        const directMap = new Map();
+
+        (Array.isArray(data?.direct) ? data.direct : []).forEach(item => {
+            const number = Number(item?.number);
+            const amount = toMoneyInt(item?.amount);
+            if (!Number.isInteger(number) || number < 1 || number > 49 || amount <= 0) {
+                warnings.push(`单号项目无效：${JSON.stringify(item)}`);
+                return;
+            }
+            directMap.set(number, (directMap.get(number) || 0) + amount);
+        });
+        directMap.forEach((amount, number) => rows.push({ play: 'direct', content: formatNum(number), amount, status: '可导入' }));
+
+        (Array.isArray(data?.multi) ? data.multi : []).forEach(item => {
+            const zs = Array.isArray(item?.zodiacs) ? item.zodiacs.map(String) : [];
+            const amount = toMoneyInt(item?.amount);
+            const ok = zs.length >= 3 && zs.length <= 6 && new Set(zs).size === zs.length && zs.every(z => zodiacs.includes(z)) && amount >= 100;
+            if (!ok) warnings.push(`多肖项目需复核：${JSON.stringify(item)}`);
+            rows.push({ play: 'multi', content: zs.join('、'), amount, status: ok ? '可导入' : '需修改' });
+        });
+
+        (Array.isArray(data?.group) ? data.group : []).forEach(item => {
+            const groupName = String(item?.groupName || '');
+            const amount = toMoneyInt(item?.amount);
+            const ok = Object.prototype.hasOwnProperty.call(zodiacGroups, groupName) && amount >= 100;
+            if (!ok) warnings.push(`组别项目需复核：${JSON.stringify(item)}`);
+            rows.push({ play: 'group', content: groupName, amount, status: ok ? '可导入' : '需修改' });
+        });
+
+        (Array.isArray(data?.not) ? data.not : []).forEach(item => {
+            const nums = normalizeNums(item?.nums || []);
+            const amount = toMoneyInt(item?.amount);
+            const ok = nums.length >= 5 && nums.length <= 12 && nums.every(n => n >= 1 && n <= 49) && new Set(nums).size === nums.length && amount >= 100;
+            if (!ok) warnings.push(`N不中项目需复核：${JSON.stringify(item)}`);
+            rows.push({ play: 'not', content: nums.map(formatNum).join('、'), amount, status: ok ? '可导入' : '需修改' });
+        });
+
+        return { rows, warnings };
+    }
+
+    function renderAiPreview(rows, warnings = []) {
+        aiDraftRows = rows;
+        const list = document.getElementById('aiPreviewList');
+        if (!rows.length) {
+            list.innerHTML = '<div class="p-8 text-center text-gray-400">没有识别到可导入项目</div>';
+            document.getElementById('btnImportAiDraft').disabled = true;
+        } else {
+            list.innerHTML = rows.map((row, idx) => `
+                <div class="ai-row grid grid-cols-12 gap-2 items-center p-2" data-index="${idx}">
+                    <select class="ai-play col-span-2 border rounded px-2 py-1 bg-white">
+                        <option value="direct" ${row.play === 'direct' ? 'selected' : ''}>单号</option>
+                        <option value="multi" ${row.play === 'multi' ? 'selected' : ''}>多肖</option>
+                        <option value="group" ${row.play === 'group' ? 'selected' : ''}>组别</option>
+                        <option value="not" ${row.play === 'not' ? 'selected' : ''}>N不中</option>
+                    </select>
+                    <input class="ai-content col-span-5 border rounded px-2 py-1" value="${escapeHtml(row.content)}">
+                    <input class="ai-amount col-span-2 border rounded px-2 py-1 text-right" type="number" min="1" step="1" value="${toMoneyInt(row.amount)}">
+                    <div class="ai-row-status col-span-2 text-center font-bold ${row.status === '可导入' ? 'text-emerald-600' : 'text-red-500'}">${escapeHtml(row.status)}</div>
+                    <button onclick="deleteAiDraftRow(${idx})" class="col-span-1 text-red-500 underline">删</button>
+                </div>
+            `).join('');
+            document.getElementById('btnImportAiDraft').disabled = false;
+        }
+        const total = rows.reduce((s, r) => s + toMoneyInt(r.amount), 0);
+        document.getElementById('aiSummary').innerText = `本次识别总额：${total.toLocaleString()}`;
+        if (warnings.length) setAiStatus(`需要复核：${warnings.join('；')}`, 'error');
+        else if (rows.length) setAiStatus('AI 识别完成，请检查预览表后再确认导入。', 'ok');
+    }
+
+    function deleteAiDraftRow(idx) {
+        aiDraftRows.splice(idx, 1);
+        renderAiPreview(aiDraftRows);
+    }
+
+    async function runAiParse() {
+        const key = document.getElementById('aiApiKeyInput').value.trim();
+        const model = document.getElementById('aiModelInput').value.trim() || 'deepseek-v4-pro';
+        const raw = document.getElementById('aiRawInput').value.trim();
+        if (!key) return setAiStatus('请先输入 DeepSeek API Key。', 'error');
+        if (!raw) return setAiStatus('请先粘贴需要识别的内容。', 'error');
+        localStorage.setItem('deepseek_api_key', key);
+        setAiStatus('AI 正在识别，请稍等...', 'info');
+        document.getElementById('btnRunAiParse').disabled = true;
+        try {
+            const res = await fetch('https://api.deepseek.com/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
+                body: JSON.stringify({
+                    model,
+                    temperature: 0,
+                    messages: [
+                        { role: 'system', content: '你只输出严格 JSON。' },
+                        { role: 'user', content: buildAiPrompt(raw) }
+                    ]
+                })
+            });
+            if (!res.ok) throw new Error(`DeepSeek 请求失败：HTTP ${res.status}`);
+            const data = await res.json();
+            const content = data?.choices?.[0]?.message?.content;
+            const parsed = parseAiJson(content);
+            const normalized = normalizeAiDraft(parsed);
+            renderAiPreview(normalized.rows, normalized.warnings);
+        } catch (e) {
+            setAiStatus((e.message || 'AI 识别失败') + '。如果浏览器提示跨域/CORS，需要改用后端代理或本地服务。', 'error');
+        } finally {
+            document.getElementById('btnRunAiParse').disabled = false;
+        }
+    }
+
+    function readAiPreviewRows() {
+        return Array.from(document.querySelectorAll('#aiPreviewList .ai-row')).map(row => ({
+            play: row.querySelector('.ai-play').value,
+            content: row.querySelector('.ai-content').value.trim(),
+            amount: toMoneyInt(row.querySelector('.ai-amount').value)
+        }));
+    }
+
+    function validateAiPreviewRow(row) {
+        if (row.amount <= 0) return { ok: false, message: '金额必须大于 0' };
+        if (row.play === 'direct') {
+            const nums = parseNumberList(row.content);
+            if (nums.length !== 1 || nums[0] < 1 || nums[0] > 49) return { ok: false, message: '单号必须是 1-49 的一个号码' };
+            return { ok: true, data: { play: 'direct', number: nums[0], amount: row.amount } };
+        }
+        if (row.play === 'multi') {
+            const zs = parseZodiacList(row.content);
+            if (row.amount < 100) return { ok: false, message: '多肖金额最低100' };
+            if (zs.length < 3 || zs.length > 6 || new Set(zs).size !== zs.length || !zs.every(z => zodiacs.includes(z))) return { ok: false, message: '多肖必须是 3-6 个有效生肖' };
+            return { ok: true, data: { play: 'multi', zodiacs: zs, amount: row.amount } };
+        }
+        if (row.play === 'group') {
+            if (row.amount < 100) return { ok: false, message: '组别金额最低100' };
+            if (!Object.prototype.hasOwnProperty.call(zodiacGroups, row.content)) return { ok: false, message: '组别名称无效' };
+            return { ok: true, data: { play: 'group', groupName: row.content, amount: row.amount } };
+        }
+        if (row.play === 'not') {
+            const nums = parseNumberList(row.content);
+            if (row.amount < 100) return { ok: false, message: 'N不中金额最低100' };
+            if (nums.length < 5 || nums.length > 12 || !nums.every(n => n >= 1 && n <= 49) || new Set(nums).size !== nums.length) return { ok: false, message: 'N不中必须是 5-12 个不重复有效号码' };
+            return { ok: true, data: { play: 'not', nums: nums.sort((a, b) => a - b), amount: row.amount } };
+        }
+        return { ok: false, message: '玩法无效' };
+    }
+
+    function importAiDraft() {
+        if (isLocked) return alert('本期已锁定，不能导入投注');
+        const rows = readAiPreviewRows();
+        if (!rows.length) return setAiStatus('没有可导入内容。', 'error');
+        const valid = [], errors = [];
+        rows.forEach((row, idx) => {
+            const result = validateAiPreviewRow(row);
+            if (result.ok) valid.push(result.data);
+            else errors.push(`第${idx + 1}行：${result.message}`);
+        });
+        if (errors.length) return setAiStatus(errors.join('；'), 'error');
+        valid.forEach(item => {
+            if (item.play === 'direct') betData[item.number - 1].value = toMoneyInt(betData[item.number - 1].value) + item.amount;
+            if (item.play === 'multi') multiBets.push({ name: '汇总', amount: item.amount, zodiacs: item.zodiacs, timestamp: Date.now() });
+            if (item.play === 'group') groupBets.push({ name: '汇总', amount: item.amount, groupName: item.groupName, timestamp: Date.now() });
+            if (item.play === 'not') notBets.push({ name: '汇总', amount: item.amount, nums: item.nums, timestamp: Date.now() });
+        });
+        saveBetData(); saveMultiBets(); saveGroupBets(); saveNotBets();
+        initTable(); updateDisplay(); updateMultiBetList(); updateGroupBetList(); updateNotBetList();
+        clearAiDraft();
+        hideModal();
+        alert(`已导入 ${valid.length} 条汇总投注`);
+    }
+
+    Object.assign(window, {
+        switchTab,
+        toggleZodiac,
+        toggleNotNum,
+        selectGroup,
+        submitMultiBet,
+        submitGroupBet,
+        submitNotBet,
+        deleteBet,
+        triggerAutoFetch,
+        handleInput,
+        copyPassUp,
+        confirmClear,
+        showClearModal,
+        showPasteModal,
+        showAiModal,
+        hideModal,
+        processPasteData,
+        updateDisplay,
+        runAiParse,
+        clearAiDraft,
+        deleteAiDraftRow,
+        importAiDraft
+    });
+
+    window.onload = () => {
+        initTable();
+        initSelectors();
+        if (storageWasReset) alert('检测到本地数据损坏，已为您重置投注单。');
+        triggerAutoFetch();
+        startCountdown();
+    };
+</script>
+</body>
+</html>
