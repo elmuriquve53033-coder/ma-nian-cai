@@ -298,13 +298,19 @@
         </div>
     </div>
     <div id="pasteModal" class="bg-white rounded-2xl p-6 max-w-md w-full hidden">
-        <h3 class="text-xl font-bold mb-4 text-center">手动录入开奖</h3>
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-bold">手动录入开奖</h3>
+            <button onclick="hideModal()" class="text-gray-400 hover:text-gray-700 text-sm font-bold">关闭</button>
+        </div>
         <label class="text-xs font-bold text-gray-500 block mb-1">开奖期号</label>
         <input id="manualIssueInput" class="w-full p-3 border rounded-xl text-sm mb-3 outline-none" placeholder="例如：2026001">
         <label class="text-xs font-bold text-gray-500 block mb-1">开奖号码（6正 + 1特）</label>
         <input id="manualNumsInput" class="w-full p-3 border rounded-xl text-sm mb-2 outline-none" placeholder="例如：01, 12, 15, 23, 34, 40, 49">
         <div id="manualError" class="hidden text-xs text-red-600 font-bold mb-3"></div>
-        <button onclick="processPasteData()" class="w-full py-2.5 bg-blue-600 text-white rounded-lg font-bold">解析开奖</button>
+        <div class="flex gap-3">
+            <button onclick="processPasteData()" class="flex-1 py-2.5 bg-blue-600 text-white rounded-lg font-bold">解析开奖</button>
+            <button onclick="hideModal()" class="flex-1 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-bold">取消</button>
+        </div>
     </div>
     <div id="aiModal" class="bg-white rounded-2xl p-6 max-w-4xl w-full hidden shadow-xl max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
@@ -457,6 +463,13 @@
     function getZodiacName(num) { return zodiacs[(num - 1) % 12]; }
     function canSettle() { return lotteryDataValid && bettingPeriod && latestIssue && bettingPeriod === latestIssue; }
     function formatNum(n) { return n < 10 ? '0' + n : String(n); }
+    function calcDirectPayout(value, odds, total) {
+        return Math.round(toMoneyInt(value) * Math.max(0, Number(odds)) - toMoneyInt(total));
+    }
+    function calcDirectPassUp(payout, riskLimit, odds) {
+        const unitRisk = Math.max(0, Number(odds));
+        return (unitRisk > 0 && payout > riskLimit) ? Math.ceil((payout - riskLimit) / unitRisk) : 0;
+    }
     function parseNumberList(text) {
         return String(text || '').split(/[\s,，、/]+/).map(s => s.trim()).filter(Boolean).map(Number).filter(n => Number.isInteger(n));
     }
@@ -730,8 +743,8 @@
         const isThisPeriodDrawn = canSettle();
         let analysis = betData.filter(i => i.value > 0 || (isThisPeriodDrawn && i.id === lastSpecialNum)).map(item => {
             const value = toMoneyInt(item.value);
-            const payout = Math.round(value * odds);
-            const passUp = (odds > 0 && payout > rL) ? Math.ceil((payout - rL) / odds) : 0;
+            const payout = calcDirectPayout(value, odds, total);
+            const passUp = calcDirectPassUp(payout, rL, odds);
             return { ...item, value, payout, passUp };
         });
         analysis.sort((a, b) => a.payout - b.payout);
@@ -750,8 +763,9 @@
         const odds = Number(document.getElementById('oddsInput').value) || 0, rL = toMoneyInt(document.getElementById('riskLimitInput').value);
         const lines = betData.map(item => {
             const value = toMoneyInt(item.value);
-            const payout = Math.round(value * odds);
-            const passUp = (odds > 0 && payout > rL) ? Math.ceil((payout - rL) / odds) : 0;
+            const total = betData.reduce((s, i) => s + toMoneyInt(i.value), 0);
+            const payout = calcDirectPayout(value, odds, total);
+            const passUp = calcDirectPassUp(payout, rL, odds);
             return passUp > 0 ? `${formatNum(item.id)} ${getZodiacName(item.id)} 分货 ${passUp}` : null;
         }).filter(Boolean);
         if (!lines.length) return alert('当前没有需要分货的号码');
@@ -840,16 +854,34 @@
     }
 
     function buildAiPrompt(rawText) {
-        return `你是投注文本结构化解析器。请只返回 JSON，不要解释，不要 Markdown。
-目标：从用户粘贴的混乱文本中识别汇总投注，不需要玩家姓名。
+        return `你是“特码投注录入助手”。请只返回严格 JSON，不要解释，不要 Markdown，不要代码块。
+
+任务：把用户粘贴的口语化投注内容，识别成可导入的汇总投注。最后线下只有一个总账，不需要识别玩家姓名。
+核心方法：先按分句理解用户的下注意图，再分类；不要只凭出现多个生肖就判多肖，也不要把一个分句里的修饰词自动延伸到下一个分句。
+
 允许玩法：
-1. direct 单号：number 为 1-49，amount 为整数。
-2. multi 多肖：zodiacs 为 3-6 个生肖，生肖只能是：${zodiacs.join('、')}，amount 为整数。
-3. group 生肖组别：groupName 只能是：${Object.keys(zodiacGroups).join('、')}，amount 为整数。
-4. not N不中：nums 为 5-12 个 1-49 的不重复号码，amount 为整数。
-赔率不用计算。无法确定金额、玩法、号码、生肖、组别时，不要编造，放入 warnings。
+1. direct：买具体特码号码，number 为 1-49，amount 为整数。
+2. multi：买生肖组合本身，zodiacs 为 3-6 个生肖，amount 为整数。
+3. group：买固定生肖组别，groupName 必须是内置组名，amount 为整数。
+4. not：N不中，nums 为 5-12 个不重复号码，amount 为整数。
+
+2026 马年生肖对应号码：
+马:01,13,25,37,49；蛇:02,14,26,38；龙:03,15,27,39；兔:04,16,28,40；虎:05,17,29,41；牛:06,18,30,42；鼠:07,19,31,43；猪:08,20,32,44；狗:09,21,33,45；鸡:10,22,34,46；猴:11,23,35,47；羊:12,24,36,48。
+
+生肖组别：
+天肖=猪牛猴马兔龙；地肖=蛇羊鸡狗鼠虎；男肖=鼠牛虎龙马猴狗；女肖=兔蛇羊鸡猪；家肖=牛马羊鸡狗猪；野肖=鼠虎兔龙蛇猴；大肖=牛虎马羊狗猪；小肖=鼠兔龙蛇猴鸡；单肖=龙虎鼠狗猴马；双肖=牛兔蛇羊鸡猪。
+
+分类规则：
+1. 如果同一分句出现“特码、特号、号码、每个号码、每号、各号、逐个、全部号码、对应号码”等表达，并且对象是生肖或组别，应展开为 direct 号码投注。“每号/各/每个号码 X”表示展开后的每一个号码都是 X。
+2. “每号/每个号码/各号”只作用于当前分句。遇到逗号、句号、分号、另外、还有、再，或新的独立金额表达时，要重新判断。例如：家肖每个号码各100，野肖200 => 家肖展开 direct，野肖按 group 判断。
+3. 如果出现“不中、五不中、5不中、N不中”等，识别为 not。若用生肖展开后数量不符合 N不中 的号码数量，不要强行导入，放入 warnings。
+4. 只出现组别名加金额，通常是 group；但同一分句带“每号/每个号码/各号”时，按 direct 展开。
+5. 只有明确出现“三肖、四肖、五肖、六肖、多肖、几肖、生肖组合、一组、一注、按肖赔率”等买生肖组合本身的表达，才识别为 multi。不要因为出现 3 个生肖就自动判 multi。
+6. 金额、玩法、号码、生肖、组别无法确定时，不要编造，放入 warnings。
+
 返回格式必须是：
-{"direct":[{"number":1,"amount":100}],"multi":[{"zodiacs":["马","蛇","龙"],"amount":100}],"group":[{"groupName":"天肖","amount":100}],"not":[{"nums":[1,2,3,4,5],"amount":100}],"warnings":["..."]}
+{"direct":[{"number":1,"amount":100,"source":"","note":""}],"multi":[{"zodiacs":["马","蛇","龙"],"amount":100,"source":"","note":""}],"group":[{"groupName":"天肖","amount":100,"source":"","note":""}],"not":[{"nums":[1,2,3,4,5],"amount":100,"source":"","note":""}],"warnings":[]}
+
 用户原文：
 ${rawText}`;
     }
