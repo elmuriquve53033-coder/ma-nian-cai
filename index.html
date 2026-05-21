@@ -764,10 +764,17 @@
     }
 
     function confirmClear() {
-        betData.forEach(i => i.value = 0); multiBets = []; groupBets = []; notBets = [];
-        localStorage.removeItem('macau_bet_v4'); localStorage.removeItem('macau_multi_bets'); localStorage.removeItem('macau_group_bets'); localStorage.removeItem('macau_not_bets');
+        betData = EMPTY_BET_DATA(); multiBets = []; groupBets = []; notBets = [];
+        selectedZodiacs = []; selectedGroupName = null; selectedNotNums = [];
+        saveBetData(); saveMultiBets(); saveGroupBets(); saveNotBets();
         if (latestIssue) { bettingPeriod = (parseInt(latestIssue) + 1).toString(); localStorage.setItem('macau_bet_period', bettingPeriod); }
-        isLocked = false; initTable(); updateMultiBetList(); updateGroupBetList(); updateNotBetList(); hideModal();
+        isLocked = false;
+        hideModal();
+        initTable();
+        updateMultiPreview();
+        selectGroup(null);
+        updateNotPreview();
+        checkLockState();
     }
 
     function showClearModal() { document.getElementById('modalOverlay').style.display='flex'; document.getElementById('clearModal').style.display='block'; document.getElementById('pasteModal').style.display='none'; document.getElementById('aiModal').style.display='none'; }
