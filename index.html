@@ -11,6 +11,16 @@
             --blue-ball: #3b82f6;
             --green-ball: #22c55e;
             --gold: #facc15;
+            --ali-blue: #1677ff;
+            --ali-blue-hover: #0958d9;
+            --ali-blue-soft: #e6f4ff;
+            --ali-orange: #ff6a00;
+            --ali-orange-hover: #e65a00;
+            --ali-navy: #101827;
+            --surface: #ffffff;
+            --line: #e5e6eb;
+            --ink: #1f2329;
+            --muted: #6b7280;
         }
         .ball-red { background-color: var(--red-ball); }
         .ball-blue { background-color: var(--blue-ball); }
@@ -18,13 +28,102 @@
         body, body * {
             font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif !important;
         }
+        body {
+            background: #f5f7fa;
+            color: var(--ink);
+        }
+        .bg-white {
+            background-color: var(--surface) !important;
+        }
+        .rounded-xl, .rounded-2xl {
+            border-radius: 8px !important;
+        }
+        .shadow-sm, .shadow-lg, .shadow-xl {
+            box-shadow: 0 6px 18px rgba(31, 35, 41, 0.06) !important;
+        }
+        .border-gray-200, .border-gray-100 {
+            border-color: var(--line) !important;
+        }
+        input, textarea, select {
+            border-color: #dcdfe6 !important;
+            background-color: #ffffff !important;
+            transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--ali-blue) !important;
+            box-shadow: 0 0 0 3px rgba(22, 119, 255, 0.12);
+        }
+        button, a {
+            transition: transform .16s ease, box-shadow .16s ease, background-color .16s ease, color .16s ease, border-color .16s ease;
+        }
+        button:not(:disabled):active, a:active {
+            transform: translateY(1px);
+        }
+        .glass-panel {
+            background: #ffffff;
+            border: 1px solid var(--line);
+            box-shadow: 0 6px 18px rgba(31, 35, 41, 0.06);
+        }
+        .quiet-danger {
+            background: #fff7f0;
+            color: #d4380d;
+            border: 1px solid #ffd8bf;
+        }
+        .quiet-danger:hover {
+            background: #fff1e6;
+            box-shadow: 0 8px 20px rgba(255, 106, 0, 0.12);
+        }
+        .primary-danger {
+            background: linear-gradient(180deg, #ff6a00 0%, #f05a00 100%);
+            box-shadow: 0 10px 22px rgba(255, 106, 0, 0.2);
+        }
+        .primary-danger:hover {
+            box-shadow: 0 14px 28px rgba(255, 106, 0, 0.25);
+        }
+        .bg-gray-900 {
+            background: linear-gradient(135deg, #0f172a 0%, #111827 52%, #16213a 100%) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .bg-blue-600, .bg-emerald-600, .bg-green-600, .bg-purple-600 {
+            background-color: var(--ali-blue) !important;
+        }
+        .hover\:bg-blue-700:hover, .hover\:bg-emerald-700:hover, .hover\:bg-green-700:hover, .hover\:bg-purple-700:hover {
+            background-color: var(--ali-blue-hover) !important;
+        }
+        .bg-orange-600 {
+            background-color: var(--ali-orange) !important;
+        }
+        .hover\:bg-orange-700:hover {
+            background-color: var(--ali-orange-hover) !important;
+        }
+        .text-blue-600, .text-blue-700, .text-emerald-600, .text-green-600, .text-purple-600 {
+            color: var(--ali-blue) !important;
+        }
+        .text-orange-600 {
+            color: var(--ali-orange) !important;
+        }
+        .border-blue-100, .border-blue-200, .border-green-100, .border-green-200, .border-purple-100, .border-purple-200 {
+            border-color: #bae0ff !important;
+        }
+        .bg-blue-50, .bg-green-50, .bg-purple-50 {
+            background-color: #f0f7ff !important;
+        }
+        .ring-blue-100, .ring-purple-200, .ring-green-200 {
+            --tw-ring-color: #bae0ff !important;
+        }
+        .rounded-lg {
+            border-radius: 6px !important;
+        }
+        .bg-gray-50 {
+            background-color: #fafafa !important;
+        }
         
         .grid-table {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 1px;
-            background-color: #e5e7eb;
-            border: 1px solid #e5e7eb;
+            background-color: var(--line);
+            border: 1px solid var(--line);
         }
         .number-row {
             background-color: white;
@@ -37,7 +136,7 @@
             width: 2rem;
             flex: none;
             text-align: center;
-            color: #111827;
+            color: var(--ink);
             font-size: 16px;
             font-weight: 900;
         }
@@ -63,11 +162,11 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #111827;
+            color: var(--ink);
             font-size: 18px;
             font-weight: 900;
-            border-right: 1px solid #e5e7eb;
-            background: #f9fafb;
+            border-right: 1px solid var(--line);
+            background: #fafafa;
         }
         .zodiac-number-strip {
             display: grid;
@@ -77,7 +176,7 @@
         }
         .zodiac-number-strip .number-row {
             border: 0;
-            border-right: 1px solid #e5e7eb;
+            border-right: 1px solid var(--line);
             height: 58px;
         }
         @media (max-width: 768px) {
@@ -95,7 +194,7 @@
             color: #1f2937;
             background: transparent;
         }
-        .bet-input:focus { background-color: #fef9c3; }
+        .bet-input:focus { background-color: #fff7e6 !important; }
         .bet-input:disabled { color: #9ca3af; cursor: not-allowed; }
         
         @keyframes pulse-slow {
@@ -108,15 +207,15 @@
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
         .zodiac-btn.active {
-            background-color: #3b82f6;
+            background-color: var(--ali-blue);
             color: white;
-            border-color: #2563eb;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            border-color: var(--ali-blue);
+            box-shadow: 0 8px 18px rgba(22, 119, 255, 0.22);
         }
         .group-btn.active {
-            background-color: #8b5cf6;
+            background-color: var(--ali-blue);
             color: white;
-            border-color: #7c3aed;
+            border-color: var(--ali-blue);
         }
         
         .not-num-btn {
@@ -145,14 +244,381 @@
             line-height: 1;
             text-shadow: 0 0 5px rgba(255,255,255,0.3);
         }
+        .console-shell {
+            width: min(1680px, calc(100vw - 40px));
+            margin: 0 auto;
+            padding: 24px 0 40px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 420px;
+            gap: 16px;
+            align-items: start;
+        }
+        .console-shell.single-mode {
+            grid-template-columns: 1fr;
+        }
+        .console-main {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .console-aside {
+            position: sticky;
+            top: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 0;
+        }
+        .console-topbar {
+            background: #0f172a !important;
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            border-radius: 8px !important;
+            padding: 16px 18px !important;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.18) !important;
+        }
+        .console-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .console-btn {
+            height: 32px;
+            padding: 0 14px;
+            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            border: 1px solid transparent;
+            line-height: 1;
+        }
+        .console-btn-primary {
+            color: #fff;
+            background: var(--ali-blue) !important;
+        }
+        .console-btn-primary:hover {
+            background: var(--ali-blue-hover) !important;
+        }
+        .console-btn-accent {
+            color: #fff;
+            background: var(--ali-orange) !important;
+        }
+        .console-btn-accent:hover {
+            background: var(--ali-orange-hover) !important;
+        }
+        .console-btn-dark {
+            color: #e5e7eb;
+            background: rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.08);
+        }
+        .console-btn-dark:hover {
+            background: rgba(255,255,255,0.16) !important;
+        }
+        .console-tabs {
+            display: flex;
+            gap: 0;
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 0 8px;
+            box-shadow: 0 4px 14px rgba(31,35,41,0.04);
+            width: fit-content;
+        }
+        .console-tab {
+            height: 44px;
+            padding: 0 22px;
+            border-radius: 0;
+            color: #4e5969;
+            font-size: 14px;
+            font-weight: 700;
+            border-bottom: 2px solid transparent;
+        }
+        .console-tab:hover {
+            color: var(--ali-blue);
+            background: #f7fbff;
+        }
+        .console-tab.active {
+            color: var(--ali-blue);
+            border-bottom-color: var(--ali-blue);
+            background: transparent;
+        }
+        .console-card {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(31,35,41,0.04);
+        }
+        .metric-strip {
+            padding: 0;
+            overflow: hidden;
+        }
+        .metric-strip > div {
+            padding: 18px 12px !important;
+        }
+        .section-toolbar {
+            min-height: 40px;
+            padding: 0 2px;
+        }
+        .section-title {
+            color: #1f2329;
+            font-size: 15px;
+            font-weight: 800;
+        }
+        .seg-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 3px;
+            background: #f2f3f5;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+        }
+        .seg-label {
+            padding: 0 8px;
+            color: #86909c;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .seg-btn {
+            min-width: 72px;
+            height: 28px;
+            padding: 0 10px;
+            border-radius: 4px;
+            color: #4e5969;
+            font-size: 12px;
+            font-weight: 700;
+        }
+        .seg-btn:hover {
+            color: var(--ali-blue);
+        }
+        .seg-btn.active {
+            color: #fff;
+            background: var(--ali-blue);
+            box-shadow: 0 4px 10px rgba(22,119,255,0.16);
+        }
+        .form-card {
+            padding: 24px !important;
+        }
+        .flow-card {
+            min-height: 520px;
+            overflow: hidden;
+        }
+        .panel-header {
+            height: 52px;
+            padding: 0 16px !important;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--line);
+            background: #fafafa !important;
+        }
+        .panel-title {
+            margin: 0;
+            color: #1f2329 !important;
+            font-size: 16px;
+            font-style: normal !important;
+            font-weight: 800;
+        }
+        .risk-card {
+            overflow: hidden;
+        }
+        .risk-card .panel-header {
+            min-height: 44px;
+            height: auto;
+            gap: 12px;
+        }
+        .risk-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .risk-action-btn {
+            height: 28px;
+            padding: 0 10px;
+            border-radius: 6px;
+            border: 1px solid #d9e2ff;
+            background: #f6f9ff;
+            color: var(--brand);
+            font-size: 12px;
+            font-weight: 800;
+            transition: all .15s ease;
+        }
+        .risk-action-btn:hover {
+            border-color: var(--brand);
+            background: #fff;
+        }
+        .risk-summary-compact {
+            display: grid;
+            grid-template-columns: 150px 210px 210px 100px;
+            justify-content: center;
+            background: #fbfcff;
+            border-bottom: 1px solid var(--line);
+        }
+        .risk-stat {
+            min-height: 40px;
+            padding: 7px 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-right: 1px solid #eef2f7;
+        }
+        .risk-stat:last-child {
+            border-right: 0;
+        }
+        .risk-stat-label {
+            color: #6b7280;
+            font-size: 11px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .risk-stat-value {
+            color: #1f2329;
+            font-size: 15px;
+            font-weight: 900;
+            text-align: center;
+            min-width: 0;
+        }
+        .risk-table-head,
+        .risk-row {
+            display: grid;
+            grid-template-columns: 96px 150px 190px 150px 72px;
+            justify-content: center;
+            align-items: center;
+        }
+        .risk-table-head {
+            height: 30px;
+            padding: 0 12px;
+            color: #8a93a3;
+            background: #fff;
+            border-bottom: 1px solid var(--line);
+            font-size: 11px;
+            font-weight: 900;
+        }
+        .risk-row {
+            min-height: 36px;
+            padding: 0 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 12px;
+        }
+        .risk-row:hover {
+            background: #f8fbff;
+        }
+        .risk-list-compact {
+            max-height: 258px;
+            overflow-y: auto;
+        }
+        .risk-table-head > div,
+        .risk-row > div {
+            text-align: center !important;
+        }
+        .risk-num {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            justify-content: center;
+        }
+        .risk-mini-ball {
+            min-width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 900;
+            padding: 0 5px;
+        }
+        .risk-empty {
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #9aa3b2;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .risk-fullscreen {
+            width: min(92vw, 1120px);
+            height: min(92vh, 900px);
+            padding: 0 !important;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+        }
+        .risk-fullscreen-body {
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .risk-fullscreen .risk-summary-compact {
+            grid-template-columns: 150px 230px 230px 100px;
+        }
+        .risk-fullscreen-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+        }
+        .risk-fullscreen .risk-row {
+            min-height: 34px;
+            font-size: 13px;
+            padding: 0 12px;
+        }
+        .risk-fullscreen .risk-table-head {
+            padding: 0 12px;
+        }
+        .risk-fullscreen .risk-empty {
+            height: 56px;
+        }
+        .danger-zone {
+            background: #fff;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 14px rgba(31,35,41,0.04);
+        }
+        .danger-zone .primary-danger,
+        .danger-zone .quiet-danger {
+            height: 42px;
+        }
+        .console-modal {
+            border-radius: 8px !important;
+            border: 1px solid var(--line);
+            box-shadow: 0 22px 60px rgba(31, 35, 41, 0.22) !important;
+        }
+        @media (max-width: 1180px) {
+            .console-shell {
+                width: min(100vw - 24px, 1680px);
+                grid-template-columns: 1fr;
+                padding-top: 12px;
+            }
+            .console-aside {
+                position: static;
+            }
+            .console-tabs {
+                width: 100%;
+                overflow-x: auto;
+            }
+            .risk-summary-compact {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .risk-stat:nth-child(2n) {
+                border-right: 0;
+            }
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans leading-tight">
+<body class="text-gray-900 font-sans leading-tight">
 
-<div class="max-w-[1600px] mx-auto p-2 lg:p-4 flex flex-col lg:flex-row gap-4">
-    <div class="flex-1 space-y-4">
+<div class="console-shell">
+    <div class="console-main">
         <!-- 开奖状态栏 -->
-        <div class="bg-gray-900 text-white p-4 rounded-xl shadow-lg border border-gray-700">
+        <div class="console-topbar text-white">
             <div class="flex flex-wrap justify-between items-center gap-4">
                 <div>
                     <div class="flex items-center gap-2 mb-1">
@@ -173,25 +639,25 @@
                     <div class="flex gap-2 mt-1" id="lotteryBalls"></div>
                 </div>
 
-                <div class="flex gap-2">
-                    <a href="https://www.1234kj.tv/post/?lotteryId=2033" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-xs rounded font-medium transition flex items-center">官网开奖</a>
-                    <button onclick="showPasteModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-xs rounded font-medium transition">手动录入</button>
-                    <button onclick="showAiModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-xs rounded font-medium transition">AI识别录入</button>
-                    <button onclick="triggerAutoFetch()" class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-xs rounded font-medium transition">刷新同步</button>
+                <div class="console-actions">
+                    <a href="https://www.1234kj.tv/post/?lotteryId=2033" target="_blank" rel="noopener noreferrer" class="console-btn console-btn-accent">官网开奖</a>
+                    <button onclick="showPasteModal()" class="console-btn console-btn-primary">手动录入</button>
+                    <button onclick="showAiModal()" class="console-btn console-btn-primary">AI识别录入</button>
+                    <button onclick="triggerAutoFetch()" class="console-btn console-btn-dark">刷新同步</button>
                 </div>
             </div>
         </div>
 
-        <div class="flex border-b border-gray-200">
-            <button onclick="switchTab('direct')" id="tabDirect" class="px-6 py-2 font-bold text-sm border-b-2 border-blue-600 text-blue-600">单号总单</button>
-            <button onclick="switchTab('multi')" id="tabMulti" class="px-6 py-2 font-bold text-sm text-gray-500 hover:text-blue-600 transition">多肖玩法</button>
-            <button onclick="switchTab('group')" id="tabGroup" class="px-6 py-2 font-bold text-sm text-gray-500 hover:text-blue-600 transition">生肖组别</button>
-            <button onclick="switchTab('not')" id="tabNot" class="px-6 py-2 font-bold text-sm text-gray-500 hover:text-blue-600 transition">N不中</button>
+        <div class="console-tabs">
+            <button onclick="switchTab('direct')" id="tabDirect" class="console-tab active">单号总单</button>
+            <button onclick="switchTab('multi')" id="tabMulti" class="console-tab">多肖玩法</button>
+            <button onclick="switchTab('group')" id="tabGroup" class="console-tab">生肖组别</button>
+            <button onclick="switchTab('not')" id="tabNot" class="console-tab">N不中</button>
         </div>
 
         <!-- 1. 单号录入区 -->
         <div id="directInputSection" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2 bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+            <div class="console-card metric-strip grid grid-cols-1 md:grid-cols-3">
                 <div class="p-2 border-r border-gray-100 text-center">
                     <div class="text-xs text-gray-500">当前投注总额</div>
                     <div id="grandTotal" class="text-xl font-black text-red-600">0</div>
@@ -207,34 +673,40 @@
                     <input type="number" id="riskLimitInput" value="10000" class="w-24 text-center font-bold outline-none text-green-700" oninput="updateDisplay()">
                 </div>
             </div>
-            <div class="flex flex-wrap items-center justify-between gap-3">
-                <div class="text-sm font-bold text-gray-700">号码面板</div>
-                <div class="inline-flex items-center gap-1 rounded-lg bg-white p-1 border border-gray-200 shadow-sm">
-                    <span class="px-2 text-xs font-bold text-gray-400">排序</span>
-                    <button id="btnDirectSortNumber" onclick="setDirectSortMode('number')" class="px-3 py-1.5 rounded-md text-xs font-bold transition">号码顺序</button>
-                    <button id="btnDirectSortZodiac" onclick="setDirectSortMode('zodiac')" class="px-3 py-1.5 rounded-md text-xs font-bold transition">生肖横排</button>
+            <div class="section-toolbar flex flex-wrap items-center justify-between gap-3">
+                <div class="section-title">号码面板</div>
+                <div class="seg-control">
+                    <span class="seg-label">排序</span>
+                    <button id="btnDirectSortNumber" onclick="setDirectSortMode('number')" class="seg-btn">号码顺序</button>
+                    <button id="btnDirectSortZodiac" onclick="setDirectSortMode('zodiac')" class="seg-btn">生肖横排</button>
                 </div>
             </div>
             <div id="mainGrid" class="grid-table rounded-lg overflow-hidden shadow-sm"></div>
-            <div id="directAnalysisPanel" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                    <h3 class="font-bold text-gray-800 italic">单号风险/分货</h3>
-                    <button onclick="copyPassUp()" class="text-xs text-blue-600 hover:underline">复制分货</button>
+            <div id="directAnalysisPanel" class="console-card risk-card">
+                <div class="panel-header justify-between">
+                    <h3 class="panel-title">单号风险/分货</h3>
+                    <div class="risk-actions">
+                        <button onclick="showRiskFullscreen()" class="risk-action-btn">全屏显示</button>
+                        <button onclick="copyPassUp()" class="risk-action-btn">复制分货</button>
+                    </div>
                 </div>
-                <div id="directRiskSummary" class="grid grid-cols-2 lg:grid-cols-4 gap-2 p-3 bg-white border-b border-gray-100"></div>
-                <div class="grid grid-cols-5 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
+                <div id="directRiskSummary" class="risk-summary-compact"></div>
+                <div class="risk-table-head">
                     <div class="text-center">号码</div><div class="text-right">录入</div><div class="text-right">盈亏</div><div class="text-right text-orange-600">建议交</div><div class="text-center">结果</div>
                 </div>
-                <div id="sortList" class="max-h-[360px] overflow-y-auto no-scrollbar"></div>
+                <div id="sortList" class="risk-list-compact no-scrollbar"></div>
             </div>
-            <div class="p-4 bg-white rounded-xl border border-gray-200 space-y-2">
+            <div class="danger-zone space-y-3">
                 <div id="directLockWarning" class="hidden text-center text-xs text-red-600 font-bold mb-1 italic">本期已开奖，数据已锁定！</div>
-                <button onclick="showClearModal()" class="w-full py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition">清空数据 (开启下一期)</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <button id="clearCurrentDirectBtn" onclick="showClearModal('current')" class="quiet-danger w-full py-3 rounded-lg font-bold">仅清空单号总单</button>
+                    <button onclick="showClearModal('all')" class="primary-danger w-full py-3 text-white rounded-lg font-bold">清空本期全部数据，开启下一期</button>
+                </div>
             </div>
         </div>
 
         <!-- 2. 多肖录入区 -->
-        <div id="multiInputSection" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+        <div id="multiInputSection" class="hidden console-card form-card space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-blue-50 p-3 rounded-lg text-center border border-blue-100">
                     <div class="text-xs text-blue-600 font-bold uppercase tracking-widest">多肖总额</div>
@@ -263,7 +735,7 @@
         </div>
 
         <!-- 3. 生肖组别录入区 -->
-        <div id="groupInputSection" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+        <div id="groupInputSection" class="hidden console-card form-card space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-purple-50 p-3 rounded-lg text-center border border-purple-100">
                     <div class="text-xs text-purple-600 font-bold uppercase tracking-widest">组别总额</div>
@@ -289,7 +761,7 @@
         </div>
 
         <!-- 4. N不中录入区 -->
-        <div id="notInputSection" class="hidden bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
+        <div id="notInputSection" class="hidden console-card form-card space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="bg-green-50 p-3 rounded-lg text-center border border-green-100">
                     <div class="text-xs text-green-600 font-bold uppercase tracking-widest">不中总额</div>
@@ -319,10 +791,10 @@
     </div>
 
     <!-- 右侧面板 -->
-    <div id="sidePanel" class="w-full lg:w-[460px] flex flex-col gap-4">
+    <div id="sidePanel" class="console-aside">
         <!-- 2. 多肖清单面板 -->
-        <div id="multiBetPanel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
-            <div class="p-4 border-b border-gray-100 bg-gray-50"><h3 class="font-bold text-gray-700 italic">多肖流水表</h3></div>
+        <div id="multiBetPanel" class="hidden console-card flow-card flex flex-col">
+            <div class="panel-header"><h3 class="panel-title">多肖流水表</h3></div>
             <div class="grid grid-cols-6 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
                 <div class="col-span-1">玩家</div><div class="text-right">金额</div><div class="text-right text-blue-600">赔付额</div><div class="col-span-2 text-center text-xs">组合</div><div class="text-center">状态</div>
             </div>
@@ -330,8 +802,8 @@
         </div>
 
         <!-- 3. 生肖组别清单面板 -->
-        <div id="groupBetPanel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
-            <div class="p-4 border-b border-gray-100 bg-gray-50"><h3 class="font-bold text-gray-700 italic">组别流水表</h3></div>
+        <div id="groupBetPanel" class="hidden console-card flow-card flex flex-col">
+            <div class="panel-header"><h3 class="panel-title">组别流水表</h3></div>
             <div class="grid grid-cols-5 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
                 <div>玩家</div><div class="text-right">金额</div><div class="text-right text-purple-600">赔付额</div><div class="text-center">组别</div><div class="text-center">状态</div>
             </div>
@@ -339,8 +811,8 @@
         </div>
 
         <!-- 4. N不中清单面板 -->
-        <div id="notBetPanel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
-            <div class="p-4 border-b border-gray-100 bg-gray-50"><h3 class="font-bold text-gray-700 italic">N不中流水表</h3></div>
+        <div id="notBetPanel" class="hidden console-card flow-card flex flex-col">
+            <div class="panel-header"><h3 class="panel-title">N不中流水表</h3></div>
             <!-- 优化表头：去掉数量，改为投注号码 -->
             <div class="grid grid-cols-6 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
                 <div>玩家</div><div class="text-right">金额</div><div class="text-right text-green-600">赔付额</div><div class="col-span-2 text-center">投注号码</div><div class="text-center text-xs">状态</div>
@@ -348,23 +820,23 @@
             <div id="notBetList" class="flex-1 overflow-y-auto max-h-[600px] lg:max-h-none no-scrollbar"></div>
         </div>
 
-        <div class="p-4 bg-white rounded-xl border border-gray-200 space-y-2">
+        <div class="danger-zone space-y-3">
             <div id="lockWarning" class="hidden text-center text-xs text-red-600 font-bold mb-1 italic">本期已开奖，数据已锁定！</div>
-            <button onclick="showClearModal()" class="w-full py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition">清空数据 (开启下一期)</button>
+            <button id="clearCurrentSideBtn" onclick="showClearModal('current')" class="quiet-danger w-full py-3 rounded-lg font-bold">仅清空当前玩法</button>
         </div>
     </div>
 </div>
 
 <div id="modalOverlay" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div id="clearModal" class="bg-white rounded-2xl p-6 max-w-sm w-full hidden text-center shadow-xl">
-        <h3 class="text-xl font-bold mb-2 text-red-600">确认开启新一期？</h3>
-        <p class="text-gray-500 text-sm mb-6">这将清除所有流水记录。</p>
+    <div id="clearModal" class="console-modal bg-white p-6 max-w-sm w-full hidden text-center">
+        <h3 id="clearModalTitle" class="text-xl font-bold mb-2 text-red-600">确认开启新一期？</h3>
+        <p id="clearModalText" class="text-gray-500 text-sm mb-6">这将清除单号、多肖、生肖组别、N不中的全部投注数据，并开启下一期。</p>
         <div class="flex gap-3">
-            <button onclick="confirmClear()" class="flex-1 py-2.5 bg-red-600 text-white rounded-lg font-bold">确定</button>
+            <button id="clearModalConfirmBtn" onclick="confirmClear()" class="flex-1 py-2.5 bg-red-600 text-white rounded-lg font-bold">确定清空全部</button>
             <button onclick="hideModal()" class="flex-1 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-bold">取消</button>
         </div>
     </div>
-    <div id="pasteModal" class="bg-white rounded-2xl p-6 max-w-md w-full hidden">
+    <div id="pasteModal" class="console-modal bg-white p-6 max-w-md w-full hidden">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-xl font-bold">手动录入开奖</h3>
             <button onclick="hideModal()" class="text-gray-400 hover:text-gray-700 text-sm font-bold">关闭</button>
@@ -379,7 +851,7 @@
             <button onclick="hideModal()" class="flex-1 py-2.5 bg-gray-200 text-gray-700 rounded-lg font-bold">取消</button>
         </div>
     </div>
-    <div id="aiModal" class="bg-white rounded-2xl p-6 max-w-4xl w-full hidden shadow-xl max-h-[90vh] overflow-y-auto">
+    <div id="aiModal" class="console-modal bg-white p-6 max-w-4xl w-full hidden max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-xl font-bold">AI识别汇总录入</h3>
             <button onclick="hideModal()" class="text-gray-400 hover:text-gray-700 text-sm font-bold">关闭</button>
@@ -419,6 +891,22 @@
             </div>
         </div>
         <div id="aiSummary" class="text-right text-sm font-black text-gray-700 mt-3">本次识别总额：0</div>
+    </div>
+    <div id="riskFullscreenModal" class="console-modal bg-white risk-fullscreen">
+        <div class="panel-header justify-between">
+            <h3 class="panel-title">单号风险/分货全屏核对</h3>
+            <div class="risk-actions">
+                <button onclick="copyPassUp()" class="risk-action-btn">复制分货</button>
+                <button onclick="hideModal()" class="risk-action-btn">关闭</button>
+            </div>
+        </div>
+        <div class="risk-fullscreen-body">
+            <div id="directRiskSummaryFull" class="risk-summary-compact"></div>
+            <div class="risk-table-head">
+                <div class="text-center">号码</div><div class="text-right">录入</div><div class="text-right">盈亏</div><div class="text-right text-orange-600">建议交</div><div class="text-center">结果</div>
+            </div>
+            <div id="sortListFull" class="risk-fullscreen-list no-scrollbar"></div>
+        </div>
     </div>
 </div>
 
@@ -531,6 +1019,8 @@
     let lotteryDataValid = false, statusWarning = '';
     let aiDraftRows = [];
     let directSortMode = localStorage.getItem('macau_direct_sort_mode') === 'zodiac' ? 'zodiac' : 'number';
+    let activePlayType = 'direct';
+    let pendingClearMode = 'all';
 
     function getColorClass(n) { return redNums.includes(n) ? 'ball-red' : (blueNums.includes(n) ? 'ball-blue' : 'ball-green'); }
     function getZodiacName(num) { return zodiacs[(num - 1) % 12]; }
@@ -569,6 +1059,18 @@
         }
     }
 
+    function getPlayLabel(type = activePlayType) {
+        return ({ direct: '单号总单', multi: '多肖玩法', group: '生肖组别', not: 'N不中' })[type] || '当前玩法';
+    }
+
+    function updateClearButtons() {
+        const label = `仅清空${getPlayLabel()}`;
+        const directBtn = document.getElementById('clearCurrentDirectBtn');
+        const sideBtn = document.getElementById('clearCurrentSideBtn');
+        if (directBtn) directBtn.innerText = '仅清空单号总单';
+        if (sideBtn) sideBtn.innerText = label;
+    }
+
     function startCountdown() {
         setInterval(() => {
             const now = new Date(), target = new Date();
@@ -581,22 +1083,25 @@
     }
 
     function switchTab(type) {
+        activePlayType = type;
         ['direct', 'multi', 'group', 'not'].forEach(t => {
             document.getElementById(`${t}InputSection`).classList.add('hidden');
             const panel = document.getElementById(`${t === 'direct' ? 'directAnalysis' : t + 'Bet'}Panel`);
             if (panel) panel.classList.add('hidden');
-            document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "px-6 py-2 font-bold text-sm text-gray-500 hover:text-blue-600 transition";
+            document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "console-tab";
         });
         document.getElementById(`${type}InputSection`).classList.remove('hidden');
         const activePanel = document.getElementById(`${type === 'direct' ? 'directAnalysis' : type + 'Bet'}Panel`);
         if (activePanel) activePanel.classList.remove('hidden');
         const sidePanel = document.getElementById('sidePanel');
         if (sidePanel) sidePanel.classList.toggle('hidden', type === 'direct');
-        document.getElementById(`tab${type.charAt(0).toUpperCase() + type.slice(1)}`).className = "px-6 py-2 font-bold text-sm border-b-2 border-blue-600 text-blue-600";
+        document.querySelector('.console-shell')?.classList.toggle('single-mode', type === 'direct');
+        document.getElementById(`tab${type.charAt(0).toUpperCase() + type.slice(1)}`).className = "console-tab active";
         if(type === 'multi') updateMultiBetList();
         else if(type === 'group') updateGroupBetList();
         else if(type === 'not') updateNotBetList();
         else updateDisplay();
+        updateClearButtons();
     }
 
     function initSelectors() {
@@ -820,8 +1325,8 @@
         const numberBtn = document.getElementById('btnDirectSortNumber');
         const zodiacBtn = document.getElementById('btnDirectSortZodiac');
         if (!numberBtn || !zodiacBtn) return;
-        numberBtn.className = `px-3 py-1.5 rounded-md text-xs font-bold transition ${directSortMode === 'number' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`;
-        zodiacBtn.className = `px-3 py-1.5 rounded-md text-xs font-bold transition ${directSortMode === 'zodiac' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`;
+        numberBtn.className = `seg-btn ${directSortMode === 'number' ? 'active' : ''}`;
+        zodiacBtn.className = `seg-btn ${directSortMode === 'zodiac' ? 'active' : ''}`;
     }
 
     function setDirectSortMode(mode) {
@@ -847,50 +1352,78 @@
 
     function handleInput(idx, val) { if(isLocked) return; betData[idx].value = toMoneyInt(val); saveBetData(); updateDisplay(); }
 
-    function updateDisplay() {
-        const total = betData.reduce((s, i) => s + toMoneyInt(i.value), 0), odds = Number(document.getElementById('oddsInput').value) || 0, rL = toMoneyInt(document.getElementById('riskLimitInput').value);
-        document.getElementById('grandTotal').innerText = Math.round(total).toLocaleString();
+    function getDirectRiskAnalysis() {
+        const total = betData.reduce((s, i) => s + toMoneyInt(i.value), 0);
+        const odds = Number(document.getElementById('oddsInput').value) || 0;
+        const riskLimit = toMoneyInt(document.getElementById('riskLimitInput').value);
         const isThisPeriodDrawn = canSettle();
-        let analysis = betData.filter(i => i.value > 0 || (isThisPeriodDrawn && i.id === lastSpecialNum)).map(item => {
-            const value = toMoneyInt(item.value);
-            const payout = calcDirectPayout(value, odds, total);
-            const passUp = calcDirectPassUp(payout, rL, odds);
-            return { ...item, value, payout, passUp };
-        });
-        analysis.sort((a, b) => b.payout - a.payout);
+        const analysis = betData
+            .filter(i => i.value > 0 || (isThisPeriodDrawn && i.id === lastSpecialNum))
+            .map(item => {
+                const value = toMoneyInt(item.value);
+                const payout = calcDirectPayout(value, odds, total);
+                const passUp = calcDirectPassUp(payout, riskLimit, odds);
+                return { ...item, value, payout, passUp };
+            })
+            .sort((a, b) => b.payout - a.payout);
         const topRisk = analysis[0] || null;
-        const burstCount = analysis.filter(item => item.payout > rL).length;
+        const burstCount = analysis.filter(item => item.payout > riskLimit).length;
         const totalPassUp = analysis.reduce((s, item) => s + item.passUp, 0);
-        const summaryEl = document.getElementById('directRiskSummary');
-        if (summaryEl) {
-            summaryEl.innerHTML = `
-                <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
-                    <div class="text-[11px] font-bold text-gray-400">最高风险号码</div>
-                    <div class="mt-1 text-lg font-black text-gray-900">${topRisk ? `${formatNum(topRisk.id)} ${escapeHtml(getZodiacName(topRisk.id))}` : '--'}</div>
-                </div>
-                <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
-                    <div class="text-[11px] font-bold text-gray-400">最高净赔</div>
-                    <div class="mt-1 text-lg font-black ${topRisk && topRisk.payout > rL ? 'text-red-600' : 'text-green-700'}">${topRisk ? topRisk.payout.toLocaleString() : '0'}</div>
-                </div>
-                <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
-                    <div class="text-[11px] font-bold text-gray-400">建议交出</div>
-                    <div class="mt-1 text-lg font-black text-orange-600">${totalPassUp ? totalPassUp.toLocaleString() : '--'}</div>
-                </div>
-                <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
-                    <div class="text-[11px] font-bold text-gray-400">爆单数</div>
-                    <div class="mt-1 text-lg font-black ${burstCount ? 'text-red-600' : 'text-gray-900'}">${burstCount}</div>
-                </div>
-            `;
-        }
-        document.getElementById('sortList').innerHTML = analysis.map(item => `
-            <div class="grid grid-cols-5 p-3 border-b border-gray-50 items-center text-xs hover:bg-gray-50 ${isThisPeriodDrawn && item.id === lastSpecialNum ? 'bg-yellow-50 ring-1 ring-yellow-200' : ''}">
-                <div class="flex flex-col items-center"><span class="font-bold">${escapeHtml(getZodiacName(item.id))}</span><span class="text-[10px] px-1 rounded ${getColorClass(item.id)} text-white">${item.id}</span></div>
-                <div class="text-right font-medium text-gray-600">${Math.round(item.value).toLocaleString()}</div>
-                <div class="text-right font-bold ${item.payout > rL ? 'text-red-500' : 'text-green-600'}">${item.payout.toLocaleString()}</div>
+        return { total, odds, riskLimit, isThisPeriodDrawn, analysis, topRisk, burstCount, totalPassUp };
+    }
+
+    function renderDirectRiskSummary(data, targetId) {
+        const summaryEl = document.getElementById(targetId);
+        if (!summaryEl) return;
+        const topText = data.topRisk ? `${formatNum(data.topRisk.id)} ${escapeHtml(getZodiacName(data.topRisk.id))}` : '--';
+        const topRiskClass = data.topRisk && data.topRisk.payout > data.riskLimit ? 'text-red-600' : 'text-green-700';
+        const burstClass = data.burstCount ? 'text-red-600' : 'text-gray-900';
+        summaryEl.innerHTML = `
+            <div class="risk-stat"><span class="risk-stat-label">最高风险号</span><span class="risk-stat-value">${topText}</span></div>
+            <div class="risk-stat"><span class="risk-stat-label">最高净赔</span><span class="risk-stat-value ${topRiskClass}">${data.topRisk ? data.topRisk.payout.toLocaleString() : '0'}</span></div>
+            <div class="risk-stat"><span class="risk-stat-label">建议交出</span><span class="risk-stat-value text-orange-600">${data.totalPassUp ? data.totalPassUp.toLocaleString() : '--'}</span></div>
+            <div class="risk-stat"><span class="risk-stat-label">爆单数</span><span class="risk-stat-value ${burstClass}">${data.burstCount}</span></div>
+        `;
+    }
+
+    function renderDirectRiskRows(data, targetId) {
+        const listEl = document.getElementById(targetId);
+        if (!listEl) return;
+        listEl.innerHTML = data.analysis.map(item => `
+            <div class="risk-row ${data.isThisPeriodDrawn && item.id === lastSpecialNum ? 'bg-yellow-50 ring-1 ring-yellow-200' : ''}">
+                <div class="risk-num"><span class="font-black text-gray-900">${escapeHtml(getZodiacName(item.id))}</span><span class="risk-mini-ball ${getColorClass(item.id)}">${formatNum(item.id)}</span></div>
+                <div class="text-right font-bold text-gray-600">${Math.round(item.value).toLocaleString()}</div>
+                <div class="text-right font-black ${item.payout > data.riskLimit ? 'text-red-500' : 'text-green-600'}">${item.payout.toLocaleString()}</div>
                 <div class="text-right font-black text-orange-600">${item.passUp > 0 ? item.passUp.toLocaleString() : '--'}</div>
-                <div class="text-center font-bold">${isThisPeriodDrawn && item.id === lastSpecialNum ? '<span class="text-yellow-600">中奖</span>' : (item.payout > rL ? '<span class="text-red-400">爆单</span>' : '平')}</div>
+                <div class="text-center font-black">${data.isThisPeriodDrawn && item.id === lastSpecialNum ? '<span class="text-yellow-600">中奖</span>' : (item.payout > data.riskLimit ? '<span class="text-red-500">爆单</span>' : '平')}</div>
             </div>
-        `).join('') || '<div class="p-10 text-center text-gray-400">无单号投注</div>';
+        `).join('') || '<div class="risk-empty">暂无单号投注</div>';
+    }
+
+    function renderDirectRiskPanel(data = getDirectRiskAnalysis()) {
+        document.getElementById('grandTotal').innerText = Math.round(data.total).toLocaleString();
+        renderDirectRiskSummary(data, 'directRiskSummary');
+        renderDirectRiskRows(data, 'sortList');
+        const fullscreenModal = document.getElementById('riskFullscreenModal');
+        if (fullscreenModal && fullscreenModal.style.display === 'flex') {
+            renderDirectRiskSummary(data, 'directRiskSummaryFull');
+            renderDirectRiskRows(data, 'sortListFull');
+        }
+    }
+
+    function updateDisplay() {
+        renderDirectRiskPanel();
+    }
+
+    function showRiskFullscreen() {
+        const data = getDirectRiskAnalysis();
+        document.getElementById('modalOverlay').style.display = 'flex';
+        document.getElementById('clearModal').style.display = 'none';
+        document.getElementById('pasteModal').style.display = 'none';
+        document.getElementById('aiModal').style.display = 'none';
+        document.getElementById('riskFullscreenModal').style.display = 'flex';
+        renderDirectRiskSummary(data, 'directRiskSummaryFull');
+        renderDirectRiskRows(data, 'sortListFull');
     }
 
     function copyPassUp() {
@@ -911,7 +1444,45 @@
         }
     }
 
+    function clearCurrentPlay(type = activePlayType) {
+        if (type === 'direct') {
+            betData = EMPTY_BET_DATA();
+            saveBetData();
+            initTable();
+            updateDisplay();
+            return;
+        }
+        if (type === 'multi') {
+            multiBets = [];
+            selectedZodiacs = [];
+            saveMultiBets();
+            updateMultiPreview();
+            updateMultiBetList();
+            return;
+        }
+        if (type === 'group') {
+            groupBets = [];
+            selectedGroupName = null;
+            saveGroupBets();
+            selectGroup(null);
+            updateGroupBetList();
+            return;
+        }
+        if (type === 'not') {
+            notBets = [];
+            selectedNotNums = [];
+            saveNotBets();
+            updateNotPreview();
+            updateNotBetList();
+        }
+    }
+
     function confirmClear() {
+        if (pendingClearMode === 'current') {
+            clearCurrentPlay(activePlayType);
+            hideModal();
+            return;
+        }
         betData = EMPTY_BET_DATA(); multiBets = []; groupBets = []; notBets = [];
         selectedZodiacs = []; selectedGroupName = null; selectedNotNums = [];
         saveBetData(); saveMultiBets(); saveGroupBets(); saveNotBets();
@@ -925,9 +1496,22 @@
         checkLockState();
     }
 
-    function showClearModal() { document.getElementById('modalOverlay').style.display='flex'; document.getElementById('clearModal').style.display='block'; document.getElementById('pasteModal').style.display='none'; document.getElementById('aiModal').style.display='none'; }
-    function showPasteModal() { document.getElementById('modalOverlay').style.display='flex'; document.getElementById('pasteModal').style.display='block'; document.getElementById('clearModal').style.display='none'; document.getElementById('aiModal').style.display='none'; document.getElementById('manualError').classList.add('hidden'); }
-    function hideModal() { document.getElementById('modalOverlay').style.display='none'; document.getElementById('clearModal').style.display='none'; document.getElementById('pasteModal').style.display='none'; document.getElementById('aiModal').style.display='none'; }
+    function showClearModal(mode = 'all') {
+        pendingClearMode = mode === 'current' ? 'current' : 'all';
+        const isCurrent = pendingClearMode === 'current';
+        document.getElementById('clearModalTitle').innerText = isCurrent ? `确认清空${getPlayLabel()}？` : '确认清空全部并开启下一期？';
+        document.getElementById('clearModalText').innerText = isCurrent
+            ? `这只会清空${getPlayLabel()}的数据，不会影响其他玩法，也不会改变投注期号。`
+            : '这将清空单号、多肖、生肖组别、N不中的全部投注数据，并开启下一期。';
+        document.getElementById('clearModalConfirmBtn').innerText = isCurrent ? `确定清空${getPlayLabel()}` : '确定清空全部';
+        document.getElementById('modalOverlay').style.display='flex';
+        document.getElementById('clearModal').style.display='block';
+        document.getElementById('pasteModal').style.display='none';
+        document.getElementById('aiModal').style.display='none';
+        document.getElementById('riskFullscreenModal').style.display='none';
+    }
+    function showPasteModal() { document.getElementById('modalOverlay').style.display='flex'; document.getElementById('pasteModal').style.display='block'; document.getElementById('clearModal').style.display='none'; document.getElementById('aiModal').style.display='none'; document.getElementById('riskFullscreenModal').style.display='none'; document.getElementById('manualError').classList.add('hidden'); }
+    function hideModal() { document.getElementById('modalOverlay').style.display='none'; document.getElementById('clearModal').style.display='none'; document.getElementById('pasteModal').style.display='none'; document.getElementById('aiModal').style.display='none'; document.getElementById('riskFullscreenModal').style.display='none'; }
 
     function showManualError(message) {
         const el = document.getElementById('manualError');
@@ -967,6 +1551,7 @@
         document.getElementById('clearModal').style.display='none';
         document.getElementById('pasteModal').style.display='none';
         document.getElementById('aiModal').style.display='block';
+        document.getElementById('riskFullscreenModal').style.display='none';
         document.getElementById('aiStatus').classList.add('hidden');
         const savedKey = localStorage.getItem('deepseek_api_key') || document.getElementById('aiApiKeyInput').defaultValue || '';
         document.getElementById('aiApiKeyInput').value = savedKey;
@@ -1325,7 +1910,9 @@ ${rawText}`;
         setDirectSortMode,
         setAiModel,
         copyPassUp,
+        showRiskFullscreen,
         confirmClear,
+        clearCurrentPlay,
         showClearModal,
         showPasteModal,
         showAiModal,
