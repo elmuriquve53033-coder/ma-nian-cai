@@ -15,10 +15,13 @@
         .ball-red { background-color: var(--red-ball); }
         .ball-blue { background-color: var(--blue-ball); }
         .ball-green { background-color: var(--green-ball); }
+        body, body * {
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", "Noto Sans CJK SC", Arial, sans-serif !important;
+        }
         
         .grid-table {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 1px;
             background-color: #e5e7eb;
             border: 1px solid #e5e7eb;
@@ -27,8 +30,60 @@
             background-color: white;
             display: flex;
             align-items: center;
-            padding: 4px 8px;
-            height: 44px;
+            padding: 8px 12px;
+            height: 58px;
+        }
+        .zodiac-label {
+            width: 2rem;
+            flex: none;
+            text-align: center;
+            color: #111827;
+            font-size: 16px;
+            font-weight: 900;
+        }
+        .direct-ball {
+            width: 34px;
+            height: 34px;
+            flex: none;
+            font-size: 15px;
+            line-height: 1;
+        }
+        .grid-table.zodiac-mode {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .zodiac-group-row {
+            display: grid;
+            grid-template-columns: 74px 1fr;
+            min-height: 58px;
+            background: #fff;
+        }
+        .zodiac-group-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #111827;
+            font-size: 18px;
+            font-weight: 900;
+            border-right: 1px solid #e5e7eb;
+            background: #f9fafb;
+        }
+        .zodiac-number-strip {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(160px, 1fr));
+            gap: 0;
+            background: #fff;
+        }
+        .zodiac-number-strip .number-row {
+            border: 0;
+            border-right: 1px solid #e5e7eb;
+            height: 58px;
+        }
+        @media (max-width: 768px) {
+            .grid-table { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+            .zodiac-group-row { grid-template-columns: 58px 1fr; }
+            .zodiac-number-strip { grid-template-columns: repeat(2, minmax(150px, 1fr)); }
         }
         .bet-input {
             border: none;
@@ -36,6 +91,7 @@
             width: 100%;
             text-align: right;
             font-weight: 600;
+            font-size: 18px;
             color: #1f2937;
             background: transparent;
         }
@@ -151,7 +207,30 @@
                     <input type="number" id="riskLimitInput" value="10000" class="w-24 text-center font-bold outline-none text-green-700" oninput="updateDisplay()">
                 </div>
             </div>
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="text-sm font-bold text-gray-700">号码面板</div>
+                <div class="inline-flex items-center gap-1 rounded-lg bg-white p-1 border border-gray-200 shadow-sm">
+                    <span class="px-2 text-xs font-bold text-gray-400">排序</span>
+                    <button id="btnDirectSortNumber" onclick="setDirectSortMode('number')" class="px-3 py-1.5 rounded-md text-xs font-bold transition">号码顺序</button>
+                    <button id="btnDirectSortZodiac" onclick="setDirectSortMode('zodiac')" class="px-3 py-1.5 rounded-md text-xs font-bold transition">生肖横排</button>
+                </div>
+            </div>
             <div id="mainGrid" class="grid-table rounded-lg overflow-hidden shadow-sm"></div>
+            <div id="directAnalysisPanel" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 class="font-bold text-gray-800 italic">单号风险/分货</h3>
+                    <button onclick="copyPassUp()" class="text-xs text-blue-600 hover:underline">复制分货</button>
+                </div>
+                <div id="directRiskSummary" class="grid grid-cols-2 lg:grid-cols-4 gap-2 p-3 bg-white border-b border-gray-100"></div>
+                <div class="grid grid-cols-5 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
+                    <div class="text-center">号码</div><div class="text-right">录入</div><div class="text-right">盈亏</div><div class="text-right text-orange-600">建议交</div><div class="text-center">结果</div>
+                </div>
+                <div id="sortList" class="max-h-[360px] overflow-y-auto no-scrollbar"></div>
+            </div>
+            <div class="p-4 bg-white rounded-xl border border-gray-200 space-y-2">
+                <div id="directLockWarning" class="hidden text-center text-xs text-red-600 font-bold mb-1 italic">本期已开奖，数据已锁定！</div>
+                <button onclick="showClearModal()" class="w-full py-3 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition">清空数据 (开启下一期)</button>
+            </div>
         </div>
 
         <!-- 2. 多肖录入区 -->
@@ -240,19 +319,7 @@
     </div>
 
     <!-- 右侧面板 -->
-    <div class="w-full lg:w-[460px] flex flex-col gap-4">
-        <!-- 1. 单号分析面板 -->
-        <div id="directAnalysisPanel" class="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
-            <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 class="font-bold text-gray-700 italic">单号风险/分货</h3>
-                <button onclick="copyPassUp()" class="text-xs text-blue-600 hover:underline">复制分货</button>
-            </div>
-            <div class="grid grid-cols-5 text-[10px] font-bold text-gray-400 p-2 border-b uppercase">
-                <div class="text-center">号码</div><div class="text-right">录入</div><div class="text-right">赔付额</div><div class="text-right text-orange-600">建议交</div><div class="text-center">结果</div>
-            </div>
-            <div id="sortList" class="flex-1 overflow-y-auto max-h-[600px] lg:max-h-none no-scrollbar"></div>
-        </div>
-
+    <div id="sidePanel" class="w-full lg:w-[460px] flex flex-col gap-4">
         <!-- 2. 多肖清单面板 -->
         <div id="multiBetPanel" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full overflow-hidden">
             <div class="p-4 border-b border-gray-100 bg-gray-50"><h3 class="font-bold text-gray-700 italic">多肖流水表</h3></div>
@@ -324,7 +391,11 @@
             </div>
             <div>
                 <label class="text-xs font-bold text-gray-500 block mb-1">模型</label>
-                <input id="aiModelInput" class="w-full p-3 border rounded-xl text-sm outline-none" value="deepseek-v4-pro">
+                <input id="aiModelInput" class="w-full p-3 border rounded-xl text-sm outline-none mb-2" value="deepseek-v4-flash">
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="btnAiModelFast" onclick="setAiModel('deepseek-v4-flash')" class="py-1.5 rounded-lg text-xs font-bold transition">快速识别</button>
+                    <button id="btnAiModelPro" onclick="setAiModel('deepseek-v4-pro')" class="py-1.5 rounded-lg text-xs font-bold transition">精准识别</button>
+                </div>
             </div>
         </div>
         <label class="text-xs font-bold text-gray-500 block mb-1">粘贴需要识别的投注内容</label>
@@ -353,6 +424,7 @@
 
 <script>
     const zodiacs = ["马", "蛇", "龙", "兔", "虎", "牛", "鼠", "猪", "狗", "鸡", "猴", "羊"];
+    const zodiacSortOrder = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪"];
     const multiOddsMap = { 3: 3.5, 4: 2.5, 5: 2.0, 6: 1.8 };
     const notOddsMap = { 5: 2.0, 6: 2.5, 7: 3.0, 8: 3.5, 9: 4.0, 10: 5.0, 11: 6.0, 12: 7.0 };
     const zodiacGroups = {
@@ -458,6 +530,7 @@
     let selectedZodiacs = [], selectedGroupName = null, selectedNotNums = [];
     let lotteryDataValid = false, statusWarning = '';
     let aiDraftRows = [];
+    let directSortMode = localStorage.getItem('macau_direct_sort_mode') === 'zodiac' ? 'zodiac' : 'number';
 
     function getColorClass(n) { return redNums.includes(n) ? 'ball-red' : (blueNums.includes(n) ? 'ball-blue' : 'ball-green'); }
     function getZodiacName(num) { return zodiacs[(num - 1) % 12]; }
@@ -517,6 +590,8 @@
         document.getElementById(`${type}InputSection`).classList.remove('hidden');
         const activePanel = document.getElementById(`${type === 'direct' ? 'directAnalysis' : type + 'Bet'}Panel`);
         if (activePanel) activePanel.classList.remove('hidden');
+        const sidePanel = document.getElementById('sidePanel');
+        if (sidePanel) sidePanel.classList.toggle('hidden', type === 'direct');
         document.getElementById(`tab${type.charAt(0).toUpperCase() + type.slice(1)}`).className = "px-6 py-2 font-bold text-sm border-b-2 border-blue-600 text-blue-600";
         if(type === 'multi') updateMultiBetList();
         else if(type === 'group') updateGroupBetList();
@@ -715,12 +790,17 @@
 
     function checkLockState() {
         isLocked = (latestIssue && bettingPeriod && parseInt(bettingPeriod) <= parseInt(latestIssue));
-        const s = document.getElementById('lockStatus'), w = document.getElementById('lockWarning');
+        const s = document.getElementById('lockStatus');
         const settled = canSettle();
         s.innerText = settled ? "锁定/开奖" : (isLocked ? "等待确认" : "接受投注");
         s.className = `ml-2 text-xs font-normal px-2 py-0.5 rounded ${isLocked?'bg-red-100 text-red-600':'bg-green-100 text-green-600'}`;
-        w.classList.toggle('hidden', !isLocked && !statusWarning);
-        if (statusWarning) w.innerText = statusWarning; else w.innerText = settled ? '本期已开奖，数据已锁定！' : '期号未一致，等待本期开奖。';
+        const warningText = statusWarning || (settled ? '本期已开奖，数据已锁定！' : '期号未一致，等待本期开奖。');
+        ['lockWarning', 'directLockWarning'].forEach(id => {
+            const w = document.getElementById(id);
+            if (!w) return;
+            w.classList.toggle('hidden', !isLocked && !statusWarning);
+            w.innerText = warningText;
+        });
         document.getElementById('bettingPeriodDisplay').innerText = bettingPeriod || '---';
         document.querySelectorAll('.bet-input').forEach(i => i.disabled = isLocked);
         updateMultiBetList(); updateGroupBetList(); updateNotBetList(); updateDisplay();
@@ -731,8 +811,38 @@
         document.getElementById('lotteryBalls').innerHTML = nums.map((n, i) => `<div class="flex flex-col items-center"><div class="w-6 h-6 rounded-full ${getColorClass(n)} text-white flex items-center justify-center font-bold text-[10px] shadow-sm ${i===6?'ring-2 ring-yellow-400':''}"> ${formatNum(n)} </div><span class="text-[8px] text-gray-500 mt-0.5">${escapeHtml(getZodiacName(n))}</span></div>${i===5?'<div class="flex items-center text-gray-500 px-1">+</div>':''}`).join('');
     }
 
+    function renderDirectNumberCell(item) {
+        const idx = item.id - 1;
+        return `<div class="number-row border-b border-r border-gray-100"><div class="zodiac-label">${escapeHtml(getZodiacName(item.id))}</div><div class="direct-ball rounded-full ${getColorClass(item.id)} text-white flex items-center justify-center font-black mx-3 shadow-sm">${formatNum(item.id)}</div><input type="number" min="0" step="1" class="bet-input" value="${item.value > 0 ? Math.round(item.value) : ''}" placeholder="0" oninput="handleInput(${idx}, this.value)" onfocus="this.select()" ${isLocked ? 'disabled' : ''}></div>`;
+    }
+
+    function updateDirectSortButtons() {
+        const numberBtn = document.getElementById('btnDirectSortNumber');
+        const zodiacBtn = document.getElementById('btnDirectSortZodiac');
+        if (!numberBtn || !zodiacBtn) return;
+        numberBtn.className = `px-3 py-1.5 rounded-md text-xs font-bold transition ${directSortMode === 'number' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`;
+        zodiacBtn.className = `px-3 py-1.5 rounded-md text-xs font-bold transition ${directSortMode === 'zodiac' ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`;
+    }
+
+    function setDirectSortMode(mode) {
+        directSortMode = mode === 'zodiac' ? 'zodiac' : 'number';
+        localStorage.setItem('macau_direct_sort_mode', directSortMode);
+        initTable();
+    }
+
     function initTable() {
-        document.getElementById('mainGrid').innerHTML = betData.map((item, idx) => `<div class="number-row border-b border-r border-gray-100"><div class="text-[10px] text-gray-400 w-4">${escapeHtml(getZodiacName(item.id))}</div><div class="w-6 h-6 rounded-full ${getColorClass(item.id)} text-white text-[10px] flex items-center justify-center font-bold mx-2">${item.id}</div><input type="number" min="0" step="1" class="bet-input" value="${item.value > 0 ? Math.round(item.value) : ''}" placeholder="0" oninput="handleInput(${idx}, this.value)" onfocus="this.select()" ${isLocked ? 'disabled' : ''}></div>`).join('');
+        const grid = document.getElementById('mainGrid');
+        updateDirectSortButtons();
+        if (directSortMode === 'zodiac') {
+            grid.className = 'grid-table zodiac-mode rounded-lg overflow-hidden shadow-sm';
+            grid.innerHTML = zodiacSortOrder.map(zodiac => {
+                const items = betData.filter(item => getZodiacName(item.id) === zodiac).sort((a, b) => a.id - b.id);
+                return `<div class="zodiac-group-row"><div class="zodiac-group-title">${escapeHtml(zodiac)}</div><div class="zodiac-number-strip">${items.map(renderDirectNumberCell).join('')}</div></div>`;
+            }).join('');
+        } else {
+            grid.className = 'grid-table rounded-lg overflow-hidden shadow-sm';
+            grid.innerHTML = betData.map(renderDirectNumberCell).join('');
+        }
     }
 
     function handleInput(idx, val) { if(isLocked) return; betData[idx].value = toMoneyInt(val); saveBetData(); updateDisplay(); }
@@ -747,7 +857,31 @@
             const passUp = calcDirectPassUp(payout, rL, odds);
             return { ...item, value, payout, passUp };
         });
-        analysis.sort((a, b) => a.payout - b.payout);
+        analysis.sort((a, b) => b.payout - a.payout);
+        const topRisk = analysis[0] || null;
+        const burstCount = analysis.filter(item => item.payout > rL).length;
+        const totalPassUp = analysis.reduce((s, item) => s + item.passUp, 0);
+        const summaryEl = document.getElementById('directRiskSummary');
+        if (summaryEl) {
+            summaryEl.innerHTML = `
+                <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                    <div class="text-[11px] font-bold text-gray-400">最高风险号码</div>
+                    <div class="mt-1 text-lg font-black text-gray-900">${topRisk ? `${formatNum(topRisk.id)} ${escapeHtml(getZodiacName(topRisk.id))}` : '--'}</div>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                    <div class="text-[11px] font-bold text-gray-400">最高净赔</div>
+                    <div class="mt-1 text-lg font-black ${topRisk && topRisk.payout > rL ? 'text-red-600' : 'text-green-700'}">${topRisk ? topRisk.payout.toLocaleString() : '0'}</div>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                    <div class="text-[11px] font-bold text-gray-400">建议交出</div>
+                    <div class="mt-1 text-lg font-black text-orange-600">${totalPassUp ? totalPassUp.toLocaleString() : '--'}</div>
+                </div>
+                <div class="rounded-lg bg-slate-50 border border-slate-100 p-3">
+                    <div class="text-[11px] font-bold text-gray-400">爆单数</div>
+                    <div class="mt-1 text-lg font-black ${burstCount ? 'text-red-600' : 'text-gray-900'}">${burstCount}</div>
+                </div>
+            `;
+        }
         document.getElementById('sortList').innerHTML = analysis.map(item => `
             <div class="grid grid-cols-5 p-3 border-b border-gray-50 items-center text-xs hover:bg-gray-50 ${isThisPeriodDrawn && item.id === lastSpecialNum ? 'bg-yellow-50 ring-1 ring-yellow-200' : ''}">
                 <div class="flex flex-col items-center"><span class="font-bold">${escapeHtml(getZodiacName(item.id))}</span><span class="text-[10px] px-1 rounded ${getColorClass(item.id)} text-white">${item.id}</span></div>
@@ -836,6 +970,21 @@
         document.getElementById('aiStatus').classList.add('hidden');
         const savedKey = localStorage.getItem('deepseek_api_key') || document.getElementById('aiApiKeyInput').defaultValue || '';
         document.getElementById('aiApiKeyInput').value = savedKey;
+        updateAiModelButtons();
+    }
+
+    function updateAiModelButtons() {
+        const model = document.getElementById('aiModelInput')?.value.trim();
+        const fast = document.getElementById('btnAiModelFast');
+        const pro = document.getElementById('btnAiModelPro');
+        if (!fast || !pro) return;
+        fast.className = `py-1.5 rounded-lg text-xs font-bold transition ${model === 'deepseek-v4-flash' ? 'bg-emerald-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`;
+        pro.className = `py-1.5 rounded-lg text-xs font-bold transition ${model === 'deepseek-v4-pro' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`;
+    }
+
+    function setAiModel(model) {
+        document.getElementById('aiModelInput').value = model;
+        updateAiModelButtons();
     }
 
     function setAiStatus(message, type = 'info') {
@@ -877,7 +1026,8 @@
 3. 如果出现“不中、五不中、5不中、N不中”等，识别为 not。若用生肖展开后数量不符合 N不中 的号码数量，不要强行导入，放入 warnings。
 4. 只出现组别名加金额，通常是 group；但同一分句带“每号/每个号码/各号”时，按 direct 展开。
 5. 只有明确出现“三肖、四肖、五肖、六肖、多肖、几肖、生肖组合、一组、一注、按肖赔率”等买生肖组合本身的表达，才识别为 multi。不要因为出现 3 个生肖就自动判 multi。
-6. 金额、玩法、号码、生肖、组别无法确定时，不要编造，放入 warnings。
+6. “组别单双200”表示 group 单肖 200 和 group 双肖 200。类似地，天地=天肖+地肖，男女=男肖+女肖，家野=家肖+野肖，大小=大肖+小肖。遇到“组别/生肖组别 + 简称 + 金额”时按 group 拆开，不要放入 warnings。
+7. 金额、玩法、号码、生肖、组别无法确定时，不要编造，放入 warnings。
 
 返回格式必须是：
 {"direct":[{"number":1,"amount":100,"source":"","note":""}],"multi":[{"zodiacs":["马","蛇","龙"],"amount":100,"source":"","note":""}],"group":[{"groupName":"天肖","amount":100,"source":"","note":""}],"not":[{"nums":[1,2,3,4,5],"amount":100,"source":"","note":""}],"warnings":[]}
@@ -894,9 +1044,88 @@ ${rawText}`;
         return JSON.parse(match[0]);
     }
 
-    function normalizeAiDraft(data) {
+    function parseGroupShorthand(rawText) {
+        const aliasMap = {
+            "单双": ["单肖", "双肖"],
+            "天地": ["天肖", "地肖"],
+            "男女": ["男肖", "女肖"],
+            "家野": ["家肖", "野肖"],
+            "大小": ["大肖", "小肖"]
+        };
         const rows = [];
-        const warnings = Array.isArray(data?.warnings) ? data.warnings.map(String) : [];
+        String(rawText || '').split(/[;；,，\n]+/).forEach(part => {
+            const clause = part.trim();
+            if (!clause || /特码|特号|号码|每号|各号|每个号码|不中/.test(clause)) return;
+            const amountMatch = clause.match(/(\d+)\s*(?:元|点)?\s*$/);
+            if (!amountMatch) return;
+            const amount = toMoneyInt(amountMatch[1]);
+            if (amount <= 0) return;
+            const label = clause.slice(0, amountMatch.index).replace(/组别|生肖组别|买|各/g, '').trim();
+            if (!label) return;
+            Object.entries(aliasMap).forEach(([alias, names]) => {
+                if (label.includes(alias)) names.forEach(groupName => rows.push({ play: 'group', content: groupName, amount, status: '可导入' }));
+            });
+            Object.keys(zodiacGroups).forEach(groupName => {
+                if (label.includes(groupName)) rows.push({ play: 'group', content: groupName, amount, status: '可导入' });
+            });
+        });
+        return rows;
+    }
+
+    function numsFromLooseText(text) {
+        return String(text || '').match(/\d{1,2}/g)?.map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= 49) || [];
+    }
+
+    function parseLocalDirectClause(clause) {
+        const text = String(clause || '').trim();
+        if (!/(特码|特号|号码|号|每号|各号|各)/.test(text)) return [];
+        const amountMatch = text.match(/(?:各|每号|每个号码|每个|每)\s*(\d+)\s*(?:元|点)?\s*$/) || text.match(/(\d+)\s*(?:元|点)?\s*$/);
+        if (!amountMatch) return [];
+        const amount = toMoneyInt(amountMatch[1]);
+        if (amount <= 0) return [];
+        const numsPart = text.slice(0, amountMatch.index).replace(/特码|特号|号码|号/g, ' ');
+        const nums = numsFromLooseText(numsPart);
+        if (!nums.length || new Set(nums).size !== nums.length) return [];
+        return nums.map(number => ({ play: 'direct', content: formatNum(number), amount, status: '可导入' }));
+    }
+
+    function parseLocalNotClause(clause) {
+        const text = String(clause || '').trim();
+        if (!/不中/.test(text)) return [];
+        const amountMatch = text.match(/(\d+)\s*(?:元|点)?\s*$/);
+        if (!amountMatch) return [];
+        const amount = toMoneyInt(amountMatch[1]);
+        if (amount <= 0) return [];
+        const nums = numsFromLooseText(text.slice(0, amountMatch.index));
+        if (nums.length < 5 || nums.length > 12 || new Set(nums).size !== nums.length) return [];
+        return [{ play: 'not', content: nums.map(formatNum).join('、'), amount, status: '可导入' }];
+    }
+
+    function parseLocalBetText(rawText) {
+        const clauses = String(rawText || '').split(/[;；,，\n]+/).map(s => s.trim()).filter(Boolean);
+        const rows = [];
+        let parsedCount = 0;
+        clauses.forEach(clause => {
+            const groupRows = parseGroupShorthand(clause);
+            const notRows = parseLocalNotClause(clause);
+            const directRows = parseLocalDirectClause(clause);
+            const found = [...groupRows, ...notRows, ...directRows];
+            if (found.length) {
+                parsedCount += 1;
+                found.forEach(row => rows.push(row));
+            }
+        });
+        const uniqueRows = [];
+        rows.forEach(row => {
+            const key = `${row.play}|${row.content}|${row.amount}`;
+            if (!uniqueRows.some(existing => `${existing.play}|${existing.content}|${existing.amount}` === key)) uniqueRows.push(row);
+        });
+        return { rows: uniqueRows, confident: clauses.length > 0 && parsedCount === clauses.length };
+    }
+
+    function normalizeAiDraft(data, rawText = '') {
+        const rows = [];
+        let warnings = Array.isArray(data?.warnings) ? data.warnings.map(String) : [];
         const directMap = new Map();
 
         (Array.isArray(data?.direct) ? data.direct : []).forEach(item => {
@@ -933,6 +1162,15 @@ ${rawText}`;
             if (!ok) warnings.push(`N不中项目需复核：${JSON.stringify(item)}`);
             rows.push({ play: 'not', content: nums.map(formatNum).join('、'), amount, status: ok ? '可导入' : '需修改' });
         });
+
+        const fallbackGroupRows = parseGroupShorthand(rawText);
+        fallbackGroupRows.forEach(row => {
+            const exists = rows.some(existing => existing.play === 'group' && existing.content === row.content && existing.amount === row.amount);
+            if (!exists) rows.push(row);
+        });
+        if (fallbackGroupRows.length) {
+            warnings = warnings.filter(message => !/(单双|天地|男女|家野|大小|组别)/.test(message));
+        }
 
         return { rows, warnings };
     }
@@ -973,12 +1211,18 @@ ${rawText}`;
 
     async function runAiParse() {
         const key = document.getElementById('aiApiKeyInput').value.trim();
-        const model = document.getElementById('aiModelInput').value.trim() || 'deepseek-v4-pro';
+        const model = document.getElementById('aiModelInput').value.trim() || 'deepseek-v4-flash';
         const raw = document.getElementById('aiRawInput').value.trim();
-        if (!key) return setAiStatus('请先输入 DeepSeek API Key。', 'error');
         if (!raw) return setAiStatus('请先粘贴需要识别的内容。', 'error');
+        const localParsed = parseLocalBetText(raw);
+        if (localParsed.confident && localParsed.rows.length) {
+            renderAiPreview(localParsed.rows, []);
+            setAiStatus('本地快速识别完成，未调用 AI；请检查预览表后再确认导入。', 'ok');
+            return;
+        }
+        if (!key) return setAiStatus('请先输入 DeepSeek API Key。', 'error');
         localStorage.setItem('deepseek_api_key', key);
-        setAiStatus('AI 正在识别，请稍等...', 'info');
+        setAiStatus(model === 'deepseek-v4-flash' ? '快速模型正在识别，请稍等...' : '精准模型正在识别，请稍等...', 'info');
         document.getElementById('btnRunAiParse').disabled = true;
         try {
             const res = await fetch('https://api.deepseek.com/chat/completions', {
@@ -987,8 +1231,10 @@ ${rawText}`;
                 body: JSON.stringify({
                     model,
                     temperature: 0,
+                    max_tokens: 1200,
+                    response_format: { type: 'json_object' },
                     messages: [
-                        { role: 'system', content: '你只输出严格 JSON。' },
+                        { role: 'system', content: '你只输出严格 JSON object。' },
                         { role: 'user', content: buildAiPrompt(raw) }
                     ]
                 })
@@ -997,7 +1243,7 @@ ${rawText}`;
             const data = await res.json();
             const content = data?.choices?.[0]?.message?.content;
             const parsed = parseAiJson(content);
-            const normalized = normalizeAiDraft(parsed);
+            const normalized = normalizeAiDraft(parsed, raw);
             renderAiPreview(normalized.rows, normalized.warnings);
         } catch (e) {
             setAiStatus((e.message || 'AI 识别失败') + '。如果浏览器提示跨域/CORS，需要改用后端代理或本地服务。', 'error');
@@ -1076,6 +1322,8 @@ ${rawText}`;
         deleteBet,
         triggerAutoFetch,
         handleInput,
+        setDirectSortMode,
+        setAiModel,
         copyPassUp,
         confirmClear,
         showClearModal,
@@ -1093,6 +1341,8 @@ ${rawText}`;
     window.onload = () => {
         initTable();
         initSelectors();
+        switchTab('direct');
+        updateAiModelButtons();
         if (storageWasReset) alert('检测到本地数据损坏，已为您重置投注单。');
         triggerAutoFetch();
         startCountdown();
