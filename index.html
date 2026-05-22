@@ -542,12 +542,24 @@
             font-weight: 700;
         }
         .risk-fullscreen {
-            width: min(92vw, 1120px);
-            height: min(92vh, 900px);
+            width: min(99vw, 1680px);
+            height: 98vh;
             padding: 0 !important;
             overflow: hidden;
             display: none;
             flex-direction: column;
+        }
+        .risk-fullscreen .panel-header {
+            min-height: 30px;
+            height: 30px;
+            padding: 0 14px !important;
+        }
+        .risk-fullscreen .panel-title {
+            font-size: 14px;
+        }
+        .risk-fullscreen .risk-action-btn {
+            height: 24px;
+            padding: 0 9px;
         }
         .risk-fullscreen-body {
             flex: 1;
@@ -559,21 +571,99 @@
         .risk-fullscreen .risk-summary-compact {
             grid-template-columns: 150px 230px 230px 100px;
         }
+        .risk-fullscreen .risk-stat {
+            min-height: 26px;
+            padding: 3px 10px;
+        }
+        .risk-fullscreen .risk-stat-label {
+            font-size: 10px;
+        }
+        .risk-fullscreen .risk-stat-value {
+            font-size: 12px;
+        }
         .risk-fullscreen-list {
             flex: 1;
             min-height: 0;
             overflow-y: auto;
         }
+        .risk-fullscreen .risk-table-head,
         .risk-fullscreen .risk-row {
-            min-height: 34px;
-            font-size: 13px;
-            padding: 0 12px;
+            grid-template-columns: 96px 150px 200px 150px 72px;
+        }
+        .risk-fullscreen .risk-row {
+            min-height: 16px;
+            height: 16px;
+            font-size: 10px;
+            padding: 0 10px;
         }
         .risk-fullscreen .risk-table-head {
-            padding: 0 12px;
+            height: 22px;
+            padding: 0 10px;
+            font-size: 10px;
+        }
+        .risk-fullscreen .risk-mini-ball {
+            min-width: 16px;
+            height: 16px;
+            font-size: 9px;
+            padding: 0 4px;
+        }
+        .risk-fullscreen .risk-num {
+            gap: 5px;
         }
         .risk-fullscreen .risk-empty {
             height: 56px;
+        }
+        @media (min-width: 1600px) and (min-height: 980px) {
+            .risk-fullscreen {
+                width: min(99vw, 1860px);
+            }
+            .risk-fullscreen .panel-header {
+                min-height: 34px;
+                height: 34px;
+                padding: 0 18px !important;
+            }
+            .risk-fullscreen .panel-title {
+                font-size: 16px;
+            }
+            .risk-fullscreen .risk-action-btn {
+                height: 28px;
+                padding: 0 12px;
+                font-size: 12px;
+            }
+            .risk-fullscreen .risk-summary-compact {
+                grid-template-columns: 190px 300px 300px 140px;
+            }
+            .risk-fullscreen .risk-stat {
+                min-height: 32px;
+                padding: 5px 14px;
+            }
+            .risk-fullscreen .risk-stat-label {
+                font-size: 12px;
+            }
+            .risk-fullscreen .risk-stat-value {
+                font-size: 15px;
+            }
+            .risk-fullscreen .risk-table-head,
+            .risk-fullscreen .risk-row {
+                grid-template-columns: 140px 220px 280px 220px 110px;
+            }
+            .risk-fullscreen .risk-table-head {
+                height: 26px;
+                font-size: 12px;
+            }
+            .risk-fullscreen .risk-row {
+                min-height: 19px;
+                height: 19px;
+                font-size: 12px;
+            }
+            .risk-fullscreen .risk-mini-ball {
+                min-width: 19px;
+                height: 19px;
+                font-size: 11px;
+            }
+            .risk-fullscreen .risk-num {
+                gap: 7px;
+            }
         }
         .danger-zone {
             background: #fff;
