@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新澳门六合彩风险管理系统 - 2026马年版</title>
+    <title>聚财盘</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         :root {
@@ -1684,7 +1684,7 @@
 核心方法：先按分句理解用户的下注意图，再分类；不要只凭出现多个生肖就判多肖，也不要把一个分句里的修饰词自动延伸到下一个分句。
 
 允许玩法：
-1. direct：买具体特码号码，number 为 1-49，amount 为整数。
+1. direct：买具体特码号码，number 为 1-49，amount 为整数；如果用户说“特码所有号码/全部号码/49个号码/所有号/全买/全包/每个号码都买 X”，必须展开为 49 个 direct 项，number 从 1 到 49，每个 amount 都是 X，绝对不要返回 all、全部、范围或省略号。
 2. multi：买生肖组合本身，zodiacs 为 3-6 个生肖，amount 为整数。
 3. group：买固定生肖组别，groupName 必须是内置组名，amount 为整数。
 4. not：N不中，nums 为 5-12 个不重复号码，amount 为整数。
@@ -1697,12 +1697,13 @@
 
 分类规则：
 1. 如果同一分句出现“特码、特号、号码、每个号码、每号、各号、逐个、全部号码、对应号码”等表达，并且对象是生肖或组别，应展开为 direct 号码投注。“每号/各/每个号码 X”表示展开后的每一个号码都是 X。
-2. “每号/每个号码/各号”只作用于当前分句。遇到逗号、句号、分号、另外、还有、再，或新的独立金额表达时，要重新判断。例如：家肖每个号码各100，野肖200 => 家肖展开 direct，野肖按 group 判断。
-3. 如果出现“不中、五不中、5不中、N不中”等，识别为 not。若用生肖展开后数量不符合 N不中 的号码数量，不要强行导入，放入 warnings。
-4. 只出现组别名加金额，通常是 group；但同一分句带“每号/每个号码/各号”时，按 direct 展开。
-5. 只有明确出现“三肖、四肖、五肖、六肖、多肖、几肖、生肖组合、一组、一注、按肖赔率”等买生肖组合本身的表达，才识别为 multi。不要因为出现 3 个生肖就自动判 multi。
-6. “组别单双200”表示 group 单肖 200 和 group 双肖 200。类似地，天地=天肖+地肖，男女=男肖+女肖，家野=家肖+野肖，大小=大肖+小肖。遇到“组别/生肖组别 + 简称 + 金额”时按 group 拆开，不要放入 warnings。
-7. 金额、玩法、号码、生肖、组别无法确定时，不要编造，放入 warnings。
+2. “特码所有号码都再买1500”“特码全部号码1500”“49个号码每个1500”“所有号各1500”“全包1500”都表示 direct 1-49 每个号码 1500。返回 JSON 时必须写满 49 个 direct 对象，例如 number:1 ... number:49，不能写成一条摘要。
+3. “每号/每个号码/各号”只作用于当前分句。遇到逗号、句号、分号、另外、还有、再，或新的独立金额表达时，要重新判断。例如：家肖每个号码各100，野肖200 => 家肖展开 direct，野肖按 group 判断。
+4. 如果出现“不中、五不中、5不中、N不中”等，识别为 not。若用生肖展开后数量不符合 N不中 的号码数量，不要强行导入，放入 warnings。
+5. 只出现组别名加金额，通常是 group；但同一分句带“每号/每个号码/各号”时，按 direct 展开。
+6. 只有明确出现“三肖、四肖、五肖、六肖、多肖、几肖、生肖组合、一组、一注、按肖赔率”等买生肖组合本身的表达，才识别为 multi。不要因为出现 3 个生肖就自动判 multi。
+7. “组别单双200”表示 group 单肖 200 和 group 双肖 200。类似地，天地=天肖+地肖，男女=男肖+女肖，家野=家肖+野肖，大小=大肖+小肖。遇到“组别/生肖组别 + 简称 + 金额”时按 group 拆开，不要放入 warnings。
+8. 金额、玩法、号码、生肖、组别无法确定时，不要编造，放入 warnings。
 
 返回格式必须是：
 {"direct":[{"number":1,"amount":100,"source":"","note":""}],"multi":[{"zodiacs":["马","蛇","龙"],"amount":100,"source":"","note":""}],"group":[{"groupName":"天肖","amount":100,"source":"","note":""}],"not":[{"nums":[1,2,3,4,5],"amount":100,"source":"","note":""}],"warnings":[]}
@@ -1751,16 +1752,29 @@ ${rawText}`;
         return String(text || '').match(/\d{1,2}/g)?.map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= 49) || [];
     }
 
+    function getAllDirectRowsFromText(text, amount) {
+        const normalized = String(text || '').replace(/\s+/g, '');
+        const isAllDirectNums = /(?:所有|全部|全|全包|全买|买全|49个|四十九个).{0,8}(?:特码|特号|号码|号)|(?:特码|特号|号码|号).{0,8}(?:所有|全部|全|全包|全买|买全|49个|四十九个)/.test(normalized);
+        return isAllDirectNums ? Array.from({ length: 49 }, (_, i) => ({ play: 'direct', content: formatNum(i + 1), amount, status: '可导入' })) : [];
+    }
+
     function parseLocalDirectClause(clause) {
         const text = String(clause || '').trim();
-        if (!/(特码|特号|号码|号|每号|各号|各)/.test(text)) return [];
-        const amountMatch = text.match(/(?:各|每号|每个号码|每个|每)\s*(\d+)\s*(?:元|点)?\s*$/) || text.match(/(\d+)\s*(?:元|点)?\s*$/);
+        const hasDirectMarker = /(特码|特号|号码|号|每号|各号|各|每个|每|买|再买|加)/.test(text);
+        const markedAmountMatch = text.match(/(?:各|每号|每个号码|每个|每|买|再买|加)\s*(\d+)\s*(?:元|点)?\s*$/);
+        const plainAmountMatch = text.match(/(\d+)\s*(?:元|点)?\s*$/);
+        const amountMatch = markedAmountMatch || plainAmountMatch;
         if (!amountMatch) return [];
         const amount = toMoneyInt(amountMatch[1]);
         if (amount <= 0) return [];
+        const allDirectRows = getAllDirectRowsFromText(text, amount);
+        if (allDirectRows.length) return allDirectRows;
         const numsPart = text.slice(0, amountMatch.index).replace(/特码|特号|号码|号/g, ' ');
         const nums = numsFromLooseText(numsPart);
-        if (!nums.length || new Set(nums).size !== nums.length) return [];
+        const numsOnlyText = numsPart.replace(/[各个每买再加元点]/g, ' ');
+        const bareNumsOnly = /^[\s,，、/+\-至到和与跟及连\d]+$/.test(numsOnlyText);
+        if (!markedAmountMatch && !hasDirectMarker && amount < 100) return [];
+        if ((!hasDirectMarker && !bareNumsOnly) || !nums.length || new Set(nums).size !== nums.length) return [];
         return nums.map(number => ({ play: 'direct', content: formatNum(number), amount, status: '可导入' }));
     }
 
@@ -1812,6 +1826,18 @@ ${rawText}`;
             }
             directMap.set(number, (directMap.get(number) || 0) + amount);
         });
+        const localAllDirectRows = parseLocalBetText(rawText).rows.filter(row => row.play === 'direct');
+        const localAllDirectAmounts = new Set(localAllDirectRows.map(row => toMoneyInt(row.amount)));
+        if (localAllDirectRows.length === 49 && localAllDirectAmounts.size === 1) {
+            localAllDirectRows.forEach(row => {
+                const number = Number(row.content);
+                const amount = toMoneyInt(row.amount);
+                if (Number.isInteger(number) && number >= 1 && number <= 49 && amount > 0) {
+                    directMap.set(number, Math.max(directMap.get(number) || 0, amount));
+                }
+            });
+            warnings = warnings.filter(message => !/单号项目无效/.test(message));
+        }
         directMap.forEach((amount, number) => rows.push({ play: 'direct', content: formatNum(number), amount, status: '可导入' }));
 
         (Array.isArray(data?.multi) ? data.multi : []).forEach(item => {
@@ -1921,6 +1947,11 @@ ${rawText}`;
             const normalized = normalizeAiDraft(parsed, raw);
             renderAiPreview(normalized.rows, normalized.warnings);
         } catch (e) {
+            if (localParsed.rows.length) {
+                renderAiPreview(localParsed.rows, []);
+                setAiStatus(`AI 返回格式异常，已先使用本地规则识别出 ${localParsed.rows.length} 条；请检查预览表后再确认导入。`, 'error');
+                return;
+            }
             setAiStatus((e.message || 'AI 识别失败') + '。如果浏览器提示跨域/CORS，需要改用后端代理或本地服务。', 'error');
         } finally {
             document.getElementById('btnRunAiParse').disabled = false;
