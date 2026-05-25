@@ -1684,7 +1684,7 @@
 核心方法：先按分句理解用户的下注意图，再分类；不要只凭出现多个生肖就判多肖，也不要把一个分句里的修饰词自动延伸到下一个分句。
 
 允许玩法：
-1. direct：买具体特码号码，number 为 1-49，amount 为整数；如果用户说“特码所有号码/全部号码/49个号码/所有号/全买/全包/每个号码都买 X”，必须展开为 49 个 direct 项，number 从 1 到 49，每个 amount 都是 X，绝对不要返回 all、全部、范围或省略号。
+1. direct：买具体特码号码，number 为 1-49，amount 为整数；如果用户说“特码所有号码/全部号码/49个号码/所有号/全买/全包/每个号码都买 X”，必须展开为 49 个 direct 项，number 从 1 到 49，每个 amount 都是 X，绝对不要返回 all、全部、范围或省略号。生肖后接“各数/各号/每号/每个号码 X”时，也必须按生肖对应号码展开为 direct。
 2. multi：买生肖组合本身，zodiacs 为 3-6 个生肖，amount 为整数。
 3. group：买固定生肖组别，groupName 必须是内置组名，amount 为整数。
 4. not：N不中，nums 为 5-12 个不重复号码，amount 为整数。
@@ -1696,14 +1696,15 @@
 天肖=猪牛猴马兔龙；地肖=蛇羊鸡狗鼠虎；男肖=鼠牛虎龙马猴狗；女肖=兔蛇羊鸡猪；家肖=牛马羊鸡狗猪；野肖=鼠虎兔龙蛇猴；大肖=牛虎马羊狗猪；小肖=鼠兔龙蛇猴鸡；单肖=龙虎鼠狗猴马；双肖=牛兔蛇羊鸡猪。
 
 分类规则：
-1. 如果同一分句出现“特码、特号、号码、每个号码、每号、各号、逐个、全部号码、对应号码”等表达，并且对象是生肖或组别，应展开为 direct 号码投注。“每号/各/每个号码 X”表示展开后的每一个号码都是 X。
+1. 如果同一分句出现“特码、特号、号码、每个号码、每号、各号、各数、逐个、全部号码、对应号码”等表达，并且对象是生肖或组别，应展开为 direct 号码投注。“每号/各号/各数/每个号码 X”表示展开后的每一个号码都是 X。
 2. “特码所有号码都再买1500”“特码全部号码1500”“49个号码每个1500”“所有号各1500”“全包1500”都表示 direct 1-49 每个号码 1500。返回 JSON 时必须写满 49 个 direct 对象，例如 number:1 ... number:49，不能写成一条摘要。
 3. “每号/每个号码/各号”只作用于当前分句。遇到逗号、句号、分号、另外、还有、再，或新的独立金额表达时，要重新判断。例如：家肖每个号码各100，野肖200 => 家肖展开 direct，野肖按 group 判断。
-4. 如果出现“不中、五不中、5不中、N不中”等，识别为 not。若用生肖展开后数量不符合 N不中 的号码数量，不要强行导入，放入 warnings。
-5. 只出现组别名加金额，通常是 group；但同一分句带“每号/每个号码/各号”时，按 direct 展开。
-6. 只有明确出现“三肖、四肖、五肖、六肖、多肖、几肖、生肖组合、一组、一注、按肖赔率”等买生肖组合本身的表达，才识别为 multi。不要因为出现 3 个生肖就自动判 multi。
-7. “组别单双200”表示 group 单肖 200 和 group 双肖 200。类似地，天地=天肖+地肖，男女=男肖+女肖，家野=家肖+野肖，大小=大肖+小肖。遇到“组别/生肖组别 + 简称 + 金额”时按 group 拆开，不要放入 warnings。
-8. 金额、玩法、号码、生肖、组别无法确定时，不要编造，放入 warnings。
+4. “兔虎鼠鸡狗马各数100”“兔,虎,鼠,鸡,狗,马,各数100元”表示这些生肖各自对应的每个号码都是 100，必须展开成 direct，不是 multi。
+5. 如果出现“不中、五不中、5不中、N不中”等，识别为 not。若用生肖展开后数量不符合 N不中 的号码数量，不要强行导入，放入 warnings。
+6. 只出现组别名加金额，通常是 group；但同一分句带“每号/每个号码/各号/各数”时，按 direct 展开。
+7. 只有明确出现“三肖、四肖、五肖、六肖、多肖、几肖、生肖组合、一组、一注、按肖赔率”等买生肖组合本身的表达，才识别为 multi。不要因为出现 3 个生肖就自动判 multi。
+8. “组别单双200”表示 group 单肖 200 和 group 双肖 200。类似地，天地=天肖+地肖，男女=男肖+女肖，家野=家肖+野肖，大小=大肖+小肖。遇到“组别/生肖组别 + 简称 + 金额”时按 group 拆开，不要放入 warnings。
+9. 金额、玩法、号码、生肖、组别无法确定时，不要编造，放入 warnings。
 
 返回格式必须是：
 {"direct":[{"number":1,"amount":100,"source":"","note":""}],"multi":[{"zodiacs":["马","蛇","龙"],"amount":100,"source":"","note":""}],"group":[{"groupName":"天肖","amount":100,"source":"","note":""}],"not":[{"nums":[1,2,3,4,5],"amount":100,"source":"","note":""}],"warnings":[]}
@@ -1758,10 +1759,18 @@ ${rawText}`;
         return isAllDirectNums ? Array.from({ length: 49 }, (_, i) => ({ play: 'direct', content: formatNum(i + 1), amount, status: '可导入' })) : [];
     }
 
+    function getDirectRowsFromZodiacs(zodiacNames, amount) {
+        const validZodiacs = [...new Set(zodiacNames)].filter(z => zodiacs.includes(z));
+        if (!validZodiacs.length || validZodiacs.length !== new Set(zodiacNames).size) return [];
+        return Array.from({ length: 49 }, (_, i) => i + 1)
+            .filter(number => validZodiacs.includes(getZodiacName(number)))
+            .map(number => ({ play: 'direct', content: formatNum(number), amount, status: '可导入' }));
+    }
+
     function parseLocalDirectClause(clause) {
         const text = String(clause || '').trim();
-        const hasDirectMarker = /(特码|特号|号码|号|每号|各号|各|每个|每|买|再买|加)/.test(text);
-        const markedAmountMatch = text.match(/(?:各|每号|每个号码|每个|每|买|再买|加)\s*(\d+)\s*(?:元|点)?\s*$/);
+        const hasDirectMarker = /(特码|特号|号码|号|每号|各号|各数|各码|各|每个|每|买|再买|加)/.test(text);
+        const markedAmountMatch = text.match(/(?:各数|各码|各号|每号|每个号码|每个|各|每|买|再买|加)\s*(\d+)\s*(?:元|点)?\s*$/);
         const plainAmountMatch = text.match(/(\d+)\s*(?:元|点)?\s*$/);
         const amountMatch = markedAmountMatch || plainAmountMatch;
         if (!amountMatch) return [];
@@ -1769,6 +1778,12 @@ ${rawText}`;
         if (amount <= 0) return [];
         const allDirectRows = getAllDirectRowsFromText(text, amount);
         if (allDirectRows.length) return allDirectRows;
+        const zodiacPart = text.slice(0, amountMatch.index).replace(/特码|特号|号码|号|生肖|各数|各码|各号|每号|每个号码|每个|各|每|买|再买|加/g, ' ');
+        const zodiacTokens = parseZodiacList(zodiacPart).filter(z => zodiacs.includes(z));
+        if (markedAmountMatch && zodiacTokens.length) {
+            const zodiacRows = getDirectRowsFromZodiacs(zodiacTokens, amount);
+            if (zodiacRows.length) return zodiacRows;
+        }
         const numsPart = text.slice(0, amountMatch.index).replace(/特码|特号|号码|号/g, ' ');
         const nums = numsFromLooseText(numsPart);
         const numsOnlyText = numsPart.replace(/[各个每买再加元点]/g, ' ');
@@ -1791,14 +1806,22 @@ ${rawText}`;
     }
 
     function parseLocalBetText(rawText) {
-        const clauses = String(rawText || '').split(/[;；,，\n]+/).map(s => s.trim()).filter(Boolean);
+        const clauses = String(rawText || '').split(/[;；\n]+/).map(s => s.trim()).filter(Boolean);
         const rows = [];
         let parsedCount = 0;
-        clauses.forEach(clause => {
+        const parseOneClause = (clause) => {
             const groupRows = parseGroupShorthand(clause);
             const notRows = parseLocalNotClause(clause);
             const directRows = parseLocalDirectClause(clause);
-            const found = [...groupRows, ...notRows, ...directRows];
+            return [...groupRows, ...notRows, ...directRows];
+        };
+        clauses.forEach(clause => {
+            let found = parseOneClause(clause);
+            if (!found.length && /[,，]/.test(clause)) {
+                const commaParts = clause.split(/[,，]+/).map(s => s.trim()).filter(Boolean);
+                const partRows = commaParts.flatMap(part => parseOneClause(part));
+                if (partRows.length) found = partRows;
+            }
             if (found.length) {
                 parsedCount += 1;
                 found.forEach(row => rows.push(row));
